@@ -14,3 +14,6 @@
 	path = goon/vendor/SDL
 	url = git@github.com:libsdl-org/SDL.git
 	branch = release-2.26.3
+[submodule "goon/vendor/runtime"]
+	path = goon/vendor/runtime
+	url = git@github.com:dotnet/runtime.git
