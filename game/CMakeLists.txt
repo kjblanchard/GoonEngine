@@ -27,7 +27,7 @@ target_include_directories(sandbox
         "${CMAKE_CURRENT_SOURCE_DIR}/"
         "./goon/src"
 )
-target_link_libraries(sandbox PUBLIC goon)
+target_link_libraries(sandbox PUBLIC goon )
 target_compile_options(sandbox PRIVATE -Wall -Wextra -Wpedantic -Wdeprecated -Wextra-semi)
 
 # Set relative link for this lib.
