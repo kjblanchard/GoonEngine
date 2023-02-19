@@ -23,4 +23,4 @@ enable_testing()
 # This exports a file that clangd can use so that we know what compile/include flags so that we can use clangd language server properly with our cmake attributes.
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 add_subdirectory(goon)
-add_subdirectory(game)
+# add_subdirectory(game)

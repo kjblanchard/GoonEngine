@@ -5,17 +5,14 @@ message(STATUS "Starting Goon Engine configuration")
 # File globbing
 # #########################################
 message(STATUS "Getting all files for cmake..")
-file(GLOB_RECURSE GOONFILES src/*.c* src/*.h*)
+file(GLOB_RECURSE GOONENGINEFILES src/*.c* src/*.h*)
+list(REMOVE_ITEM GOONENGINEFILES "main.cpp")
 
 # #########################################
 # Platform specific Project setup
 # #########################################
 message(STATUS "Changing the platform specific settings")
-
 if(APPLE)
-        # file(GLOB_RECURSE OBJCFILES src/*.mm)
-        # list(APPEND GOONFILES ${OBJCFILES})
-
         # MACOS
         if(NOT IOS)
                 set(CMAKE_THREAD_LIBS_INIT "-lpthread") # We need to say that we have threads, or else borked for some reason.
@@ -35,8 +32,8 @@ endif(WIN32)
 # #########################################
 message(STATUS "Initializing the project")
 include(FindPkgConfig)
-add_library(goon STATIC ${GOONFILES})
-set_property(TARGET goon PROPERTY CXX_STANDARD 20)
+add_library(goonEngine SHARED ${GOONENGINEFILES})
+set_property(TARGET goonEngine PROPERTY CXX_STANDARD 20)
 
 if(UNIX AND NOT APPLE)
         set(LINUX ON)
@@ -104,42 +101,33 @@ endif(CMAKE_DEBUG_VARIABLES)
 # #########################################
 if(GOON_BUILD_PCH)
         message(STATUS "Setting up PCH, mac needs objc")
-
-        # if(APPLE)
-        # target_precompile_headers(goon PRIVATE
-        # "$<$<COMPILE_LANGUAGE:OBJCXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/gnpch.hpp>")
-        # else()
-        target_precompile_headers(goon PRIVATE
-        "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/gnpch.hpp>")
-        # endif(APPLE)
+        target_precompile_headers(goonEngine PRIVATE
+                "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/gnpch.hpp>")
 endif(GOON_BUILD_PCH)
 
 # #########################################
 # Compile Definitions
 # #########################################
-target_compile_definitions(goon PRIVATE
-)
-
+target_compile_definitions(goonEngine PRIVATE)
 if(GOON_BUILD_ENGINE)
-        target_compile_definitions(goon PRIVATE
-
+        target_compile_definitions(goonEngine PRIVATE
                 # -DGN_BUILD_DLL # Builds the full project
                 # -DGN_ENABLE_ASSERTS # Enables asserts
         )
 endif(GOON_BUILD_ENGINE)
 
 if(APPLE)
-        target_compile_definitions(goon PRIVATE -DGN_PLATFORM_MACOS)
+        target_compile_definitions(goonEngine PRIVATE -DGN_PLATFORM_MACOS)
 elseif(WIN32)
-        target_compile_definitions(goon PRIVATE -DGN_PLATFORM_WINDOWS)
+        target_compile_definitions(goonEngine PRIVATE -DGN_PLATFORM_WINDOWS)
 elseif(LINUX)
-        target_compile_definitions(goon PRIVATE -DGN_PLATFORM_LINUX)
+        target_compile_definitions(goonEngine PRIVATE -DGN_PLATFORM_LINUX)
 endif(APPLE)
 
 # #########################################
 # Compile Options
 # #########################################
-target_compile_options(goon PRIVATE
+target_compile_options(goonEngine PRIVATE
         -Wall
         -Wextra
         -Wpedantic
@@ -150,7 +138,7 @@ target_compile_options(goon PRIVATE
 # #########################################
 # Linking Options
 # #########################################
-target_link_libraries(goon
+target_link_libraries(goonEngine
         PUBLIC
         spdlog::spdlog
         imgui
@@ -159,7 +147,7 @@ target_link_libraries(goon
         PRIVATE
 )
 
-target_include_directories(goon
+target_include_directories(goonEngine
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
 
@@ -182,3 +170,20 @@ target_include_directories(goon
 # Test
 # #########################################
 # add_test(NAME cppclean COMMAND ${CMAKE_SOURCE_DIR}/tests/cppclean.sh ${CMAKE_SOURCE_DIR})
+
+# #########################################
+# executable
+# #########################################
+message(STATUS "Creating Library for c# scripting..")
+file(GLOB GOONDLLFILES src/main.cpp)
+# add_library(goonDll STATIC ${GOONDLLFILES})
+add_executable(goon ${GOONDLLFILES})
+target_include_directories(goon
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/
+)
+target_link_libraries(goon
+        PUBLIC
+        goonEngine
+)
+set_property(TARGET goon PROPERTY CXX_STANDARD 20)
