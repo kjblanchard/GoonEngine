@@ -12,6 +12,7 @@ list(REMOVE_ITEM GOONENGINEFILES "main.cpp")
 # Platform specific Project setup
 # #########################################
 message(STATUS "Changing the platform specific settings")
+
 if(APPLE)
         # MACOS
         if(NOT IOS)
@@ -39,13 +40,14 @@ if(UNIX AND NOT APPLE)
         set(LINUX ON)
 endif(UNIX AND NOT APPLE)
 
+
 # #########################################
 # Options
 # #########################################
 option(GOON_GIT_SUBMODULE "Check submodules during build" ON)
 option(GOON_BUILD_PCH "Uses a PCH file to try and speed up compilation" ON)
 option(GOON_BUILD_ENGINE "Builds the full engine into the project" ON)
-option(CMAKE_DEBUG_VARIABLES "Runs a debug on all variables for troubleshooting" OFF)
+option(CMAKE_DEBUG_VARIABLES "Runs a debug on all variables for troubleshooting" ON)
 
 # Not implemented.
 option(GOON_INSTALL_SUBMODULES "Install the submodules" ON)
@@ -72,16 +74,18 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 endif()
 
 # spdlog
-add_subdirectory(vendor/spdlog EXCLUDE_FROM_ALL)
+add_subdirectory(external/spdlog EXCLUDE_FROM_ALL)
 
 # SDL
-add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
+add_subdirectory(external/SDL EXCLUDE_FROM_ALL)
 
 # IMGUI
-add_subdirectory(vendor/imgui EXCLUDE_FROM_ALL)
+add_subdirectory(external/imgui EXCLUDE_FROM_ALL)
 
 # glm
-add_subdirectory(vendor/glm EXCLUDE_FROM_ALL)
+add_subdirectory(external/glm EXCLUDE_FROM_ALL)
+
+
 
 # #########################################
 # For Debug, print aout all variables.
@@ -109,8 +113,10 @@ endif(GOON_BUILD_PCH)
 # Compile Definitions
 # #########################################
 target_compile_definitions(goonEngine PRIVATE)
+
 if(GOON_BUILD_ENGINE)
         target_compile_definitions(goonEngine PRIVATE
+
                 # -DGN_BUILD_DLL # Builds the full project
                 # -DGN_ENABLE_ASSERTS # Enables asserts
         )
@@ -138,6 +144,7 @@ target_compile_options(goonEngine PRIVATE
 # #########################################
 # Linking Options
 # #########################################
+
 target_link_libraries(goonEngine
         PUBLIC
         spdlog::spdlog
@@ -152,10 +159,10 @@ target_include_directories(goonEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
 
         PRIVATE
-        vendor/imgui
+        external/imgui
         spdlog::spdlog
-        vendor/glm/
-        vendor/SDL
+        external/glm/
+        external/SDL
 )
 
 # #########################################
@@ -174,8 +181,9 @@ target_include_directories(goonEngine
 # #########################################
 # executable
 # #########################################
-message(STATUS "Creating Library for c# scripting..")
+message(STATUS "Creating Editor..")
 file(GLOB GOONDLLFILES src/main.cpp)
+
 # add_library(goonDll STATIC ${GOONDLLFILES})
 add_executable(goon ${GOONDLLFILES})
 target_include_directories(goon
