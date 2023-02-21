@@ -85,6 +85,9 @@ add_subdirectory(external/imgui EXCLUDE_FROM_ALL)
 # glm
 add_subdirectory(external/glm EXCLUDE_FROM_ALL)
 
+# goon_sound
+add_subdirectory(external/goon_sound EXCLUDE_FROM_ALL)
+
 
 
 # #########################################
@@ -150,6 +153,7 @@ target_link_libraries(goonEngine
         spdlog::spdlog
         imgui
         SDL2::SDL2
+        goon_sound
 
         PRIVATE
 )
@@ -163,6 +167,7 @@ target_include_directories(goonEngine
         spdlog::spdlog
         external/glm/
         external/SDL
+        external/goon_sound/src
 )
 
 # #########################################
@@ -189,9 +194,14 @@ add_executable(goon ${GOONDLLFILES})
 target_include_directories(goon
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        external/goon_sound/src
 )
 target_link_libraries(goon
         PUBLIC
+        goon_sound
         goonEngine
+        spdlog::spdlog
+        imgui
+        SDL2::SDL2
 )
 set_property(TARGET goon PROPERTY CXX_STANDARD 20)

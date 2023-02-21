@@ -14,3 +14,6 @@
 	path = goon/external/SDL
 	url = git@github.com:libsdl-org/SDL.git
 	branch = release-2.26.3
+[submodule "goon/external/goon_sound"]
+	path = goon/external/goon_sound
+	url = git@github.com:kjblanchard/goon_sound.git
