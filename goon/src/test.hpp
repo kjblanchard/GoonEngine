@@ -2,5 +2,4 @@
 
 
 int demo();
-int talk();
 void playMusic();

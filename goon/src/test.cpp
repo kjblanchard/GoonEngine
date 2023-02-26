@@ -6,10 +6,6 @@
 #include <stdio.h>
 #include <sound/sound.h>
 
-int talk()
-{
-    printf("Hi");
-}
 void playMusic()
 {
     int result = InitializeSound();

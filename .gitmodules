@@ -6,10 +6,6 @@
 	path = goon/external/spdlog
 	url = https://github.com/gabime/spdlog.git
 	branch = v1.11.0
-[submodule "goon/external/imgui"]
-	path = goon/external/imgui
-	url = git@github.com:kjblanchard/imgui.git
-	branch = docking
 [submodule "goon/external/SDL"]
 	path = goon/external/SDL
 	url = git@github.com:libsdl-org/SDL.git

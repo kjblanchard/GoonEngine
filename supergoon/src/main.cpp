@@ -9,6 +9,5 @@ int main(int argc, char **argv)
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
 
-    talk();
     demo();
 }
