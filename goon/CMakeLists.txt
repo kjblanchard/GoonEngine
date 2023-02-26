@@ -82,6 +82,9 @@ add_subdirectory(external/SDL EXCLUDE_FROM_ALL)
 # IMGUI
 add_subdirectory(external/imgui EXCLUDE_FROM_ALL)
 
+# entt
+add_subdirectory(external/entt EXCLUDE_FROM_ALL)
+
 # glm
 add_subdirectory(external/glm EXCLUDE_FROM_ALL)
 
@@ -153,6 +156,7 @@ target_link_libraries(goonEngine
         spdlog::spdlog
         imgui
         SDL2::SDL2
+        EnTT::EnTT
         goon_sound
 
         PRIVATE
@@ -168,6 +172,7 @@ target_include_directories(goonEngine
         external/glm/
         external/SDL
         external/goon_sound/src
+        external/entt/src
 )
 
 # #########################################
@@ -177,31 +182,3 @@ target_include_directories(goonEngine
 # install(DIRECTORY ${FOLDERS_TO_COPY}
 # DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 # COMPONENT assets)
-
-# #########################################
-# Test
-# #########################################
-# add_test(NAME cppclean COMMAND ${CMAKE_SOURCE_DIR}/tests/cppclean.sh ${CMAKE_SOURCE_DIR})
-
-# #########################################
-# executable
-# #########################################
-message(STATUS "Creating Editor..")
-file(GLOB GOONDLLFILES src/main.cpp)
-
-# add_library(goonDll STATIC ${GOONDLLFILES})
-add_executable(goon ${GOONDLLFILES})
-target_include_directories(goon
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/
-        external/goon_sound/src
-)
-target_link_libraries(goon
-        PUBLIC
-        goon_sound
-        goonEngine
-        spdlog::spdlog
-        imgui
-        SDL2::SDL2
-)
-set_property(TARGET goon PROPERTY CXX_STANDARD 20)

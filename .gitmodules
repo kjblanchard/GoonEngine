@@ -17,3 +17,6 @@
 [submodule "goon/external/goon_sound"]
 	path = goon/external/goon_sound
 	url = git@github.com:kjblanchard/goon_sound.git
+[submodule "goon/external/entt"]
+	path = goon/external/entt
+	url = git@github.com:skypjack/entt.git
