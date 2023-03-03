@@ -4,6 +4,9 @@
 message(STATUS "Creating Supergoon Editor executable..")
 file(GLOB_RECURSE SUPERGOONFILES src/*.c*)
 
+# IMGUI
+add_subdirectory(external/imgui EXCLUDE_FROM_ALL)
+
 # add_library(goonDll STATIC ${GOONDLLFILES})
 add_executable(supergoon ${SUPERGOONFILES})
 target_include_directories(supergoon

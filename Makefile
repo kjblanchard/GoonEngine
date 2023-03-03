@@ -5,7 +5,7 @@ XCODE_BUILD_SYSTEM = Xcode
 BACKUP_BUILD_SYSTEM = 'Unix Makefiles'
 WINDOWS_BUILD_SYSTEM = 'MinGW Makefiles'
 BUILD_FOLDER = build/bin
-BINARY_NAME = goon
+BINARY_NAME = supergoon
 BINARY_PATH = $(BUILD_FOLDER)/$(BINARY_NAME)
 
 all: build

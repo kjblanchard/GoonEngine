@@ -79,8 +79,6 @@ add_subdirectory(external/spdlog EXCLUDE_FROM_ALL)
 # SDL
 add_subdirectory(external/SDL EXCLUDE_FROM_ALL)
 
-# IMGUI
-add_subdirectory(external/imgui EXCLUDE_FROM_ALL)
 
 # entt
 add_subdirectory(external/entt EXCLUDE_FROM_ALL)

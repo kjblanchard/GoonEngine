@@ -16,3 +16,6 @@
 [submodule "goon/external/entt"]
 	path = goon/external/entt
 	url = git@github.com:skypjack/entt.git
+[submodule "supergoon/external/imgui"]
+	path = supergoon/external/imgui
+	url = git@github.com:kjblanchard/imgui.git
