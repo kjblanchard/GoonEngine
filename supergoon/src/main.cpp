@@ -1,30 +1,29 @@
 #include <iostream>
 #include <test.hpp>
+#include <memory>
 #include <SDL.h>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <Goon/scene/Scene.hpp>
+#include <Goon/scene/GameObject.hpp>
 #include <Goon/core/bgm_asset.hpp>
+#include <Goon/core/asset_manager.hpp>
+#include <Goon/scene/components/BgmComponent.hpp>
 
-int demo();
+
+int demo(goon::GameObject go);
 
 int main(int argc, char **argv)
 {
     goon::Scene scene;
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
-    auto bgm = goon::BgmAsset("victory2.ogg");
-    bgm.Load();
-    bgm.Play();
-    while(1)
-    {
-        bgm.Update();
-    }
-    demo();
+    boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0,19);
+    demo(boi);
 }
 
-int demo()
+int demo(goon::GameObject go)
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -144,6 +143,8 @@ int demo()
         SDL_RenderClear(renderer);
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
+        auto thing = go.GetComponent<goon::BgmComponent>();
+        thing.LoadedBgm.get()->Update();
     }
 
     // Close everything after loop finished.

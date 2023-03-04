@@ -1,4 +1,5 @@
-#include <goon/scene/Scene.hpp>
+#include <Goon/scene/Scene.hpp>
+#include <Goon/scene/GameObject.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 #include <Goon/scene/components/TagComponent.hpp>
 #include <Goon/scene/components/TransformComponent.hpp>
