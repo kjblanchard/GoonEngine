@@ -10,7 +10,6 @@
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 
-
 int demo(goon::GameObject go);
 
 int main(int argc, char **argv)
@@ -18,7 +17,7 @@ int main(int argc, char **argv)
     goon::Scene scene;
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
-    boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0,3333);
+    boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0, 3333);
     demo(boi);
 }
 
@@ -51,9 +50,6 @@ int demo(goon::GameObject go)
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     // ImGui::StyleColorsDark();
@@ -103,9 +99,21 @@ int demo(goon::GameObject go)
                 done = true;
         }
 
-        // Start the Dear ImGui frame
+// Start the Dear ImGui frame
+// If Apple.
+#ifdef GN_PLATFORM_MACOS
+        int width, height, rwidth, rheight;
+        float scalex, scaley;
+        SDL_GetWindowSize(window, &width, &height);
+        SDL_GetRendererOutputSize(renderer, &rwidth, &rheight);
+        scalex = rwidth / width;
+        scaley = rheight / height;
+        SDL_RenderSetScale(renderer, scalex, scaley);
+#endif
+
         ImGui_ImplSDLRenderer_NewFrame();
         ImGui_ImplSDL2_NewFrame();
+
         ImGui::NewFrame();
 
         if (ImGui::BeginMainMenuBar())
