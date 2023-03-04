@@ -13,7 +13,7 @@ namespace goon
         virtual void *GetAsset() const override { return _bgm; }
         Bgm *_bgm;
 
-//TODO put this somewhere.
+        //TODO put this somewhere.
         void Update();
 
     private:

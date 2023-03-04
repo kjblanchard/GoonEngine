@@ -18,10 +18,13 @@ namespace goon
     {
         InitializeSound();
         auto thing = &_filename[0];
-        _bgm = LoadBgmFromLua(thing, _begin, _end);
+        _bgm = LoadBgm(thing);
+        UpdateBgmLoopTimes(_bgm, _begin, _end);
+        PlayBgm(_bgm, 1.0f);
     }
-        void BgmAsset::Update()
-        {
-            UpdateSound();
-        }
+
+    void BgmAsset::Update()
+    {
+        UpdateSound();
+    }
 }

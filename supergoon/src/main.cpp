@@ -1,5 +1,4 @@
 #include <iostream>
-#include <test.hpp>
 #include <memory>
 #include <SDL.h>
 #include <imgui.h>
@@ -19,7 +18,7 @@ int main(int argc, char **argv)
     goon::Scene scene;
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
-    boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0,19);
+    boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0,3333);
     demo(boi);
 }
 
