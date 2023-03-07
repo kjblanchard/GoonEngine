@@ -15,15 +15,21 @@ namespace goon
         GameObject(entt::entity entityId, Scene *scene);
         ~GameObject();
         template <typename T, typename... Args>
-        void AddComponent(Args&&... args)
+        void AddComponent(Args &&...args)
         {
             _scene->Registry().emplace<T>(_entityId, std::forward<Args>(args)...);
         }
         template <typename T>
-        T& GetComponent()
+        T &GetComponent()
         {
             return _scene->Registry().get<T>(_entityId);
+        }
+        uint64_t GetID() { return (uint64_t)_entityId; }
 
+        template <typename T>
+        bool HasComponent()
+        {
+            return _scene->Registry().all_of<T>(_entityId);
         }
 
     private:

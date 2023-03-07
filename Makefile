@@ -8,7 +8,7 @@ BUILD_FOLDER = build/bin
 BINARY_NAME = supergoon
 BINARY_PATH = $(BUILD_FOLDER)/$(BINARY_NAME)
 
-all: build
+all: build run
 
 configure:
 	@cmake . -B build -D CMAKE_BUILD_TYPE=Debug -G $(BUILD_SYSTEM)

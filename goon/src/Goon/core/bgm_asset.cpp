@@ -20,7 +20,7 @@ namespace goon
         auto thing = &_filename[0];
         _bgm = LoadBgm(thing);
         UpdateBgmLoopTimes(_bgm, _begin, _end);
-        PlayBgm(_bgm, 1.0f);
+        PlayBgm(_bgm, 1.0f, 1);
     }
 
     void BgmAsset::Update()

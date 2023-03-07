@@ -9,19 +9,22 @@
 #include <Goon/core/bgm_asset.hpp>
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
+#include <Goon/scene/components/TagComponent.hpp>
 
-int demo(goon::GameObject go);
+int demo(goon::Scene &scene);
 
 int main(int argc, char **argv)
 {
     goon::Scene scene;
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
+    name = "No u bro";
+    auto boi2 = scene.CreateGameObject(name);
     boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0, 3333);
-    demo(boi);
+    demo(scene);
 }
 
-int demo(goon::GameObject go)
+int demo(goon::Scene &scene)
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -75,11 +78,7 @@ int demo(goon::GameObject go)
     // ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     // IM_ASSERT(font != NULL);
 
-    // Our state
     bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
     // Main loop
     bool done = false;
     while (!done)
@@ -133,35 +132,80 @@ int demo(goon::GameObject go)
             ImGui::EndMainMenuBar();
         }
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+        ////
+        // Hierarchy Panel
+        ////
+        ImGui::Begin("Hierarchy");
+        static int entitySelected = -1;
+        if (ImGui::TreeNode("Scene"))
         {
-            ImGui::Begin("File Tab"); // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
 
-        // Rendering
+            scene.Registry().each([&](auto entityID)
+                                  {
+                goon::GameObject go{ entityID , &scene };
+                auto& tagComponent = go.GetComponent<goon::TagComponent>();
+                if (ImGui::Selectable(tagComponent,  go.GetID() == entitySelected))
+                    entitySelected = go.GetID(); });
+            ImGui::TreePop();
+        }
+        ImGui::End();
+
+        ////
+        // Inspector Panel
+        ////
+        ImGui::Begin("Inspector");
+        if (entitySelected != -1)
+        {
+            goon::GameObject gameobject{(entt::entity)entitySelected, &scene};
+            ImGui::Text("GameObject %s", gameobject.GetComponent<goon::TagComponent>().Tag.c_str());
+            if (gameobject.HasComponent<goon::BgmComponent>())
+            {
+                if (ImGui::TreeNode("Bgm Component"))
+                {
+                    auto &bgmComponent = gameobject.GetComponent<goon::BgmComponent>();
+                    ImGui::Text("Filename:");
+                    ImGui::SameLine();
+                    ImGui::Text("Soundfile: %s", bgmComponent.SoundFile.c_str());
+                    ImGui::Text("Begin Point: %f", bgmComponent.LoopBegin);
+                    ImGui::Text("End Point: %f", bgmComponent.LoopEnd);
+                    if (ImGui::Button("Play"))
+                    {
+
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Pause"))
+                    {
+
+                    }
+                    ImGui::TreePop();
+                }
+                ImGui::TreePop();
+            }
+        }
+        ImGui::End();
+
+        // TODO - move this to our own renderer.
         ImGui::Render();
         SDL_SetRenderDrawColor(renderer, (Uint8)(255), (Uint8)(255), (Uint8)(255), (Uint8)(255));
         SDL_RenderClear(renderer);
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
-        auto thing = go.GetComponent<goon::BgmComponent>();
-        thing.LoadedBgm.get()->Update();
+        auto view = scene.Registry().view<goon::BgmComponent>();
+        for (auto entity : view)
+        {
+            auto &bgm = view.get<goon::BgmComponent>(entity);
+            bgm.LoadedBgm.get()->Update();
+        }
     }
 
-    // Close everything after loop finished.
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-
     return 0;
 }

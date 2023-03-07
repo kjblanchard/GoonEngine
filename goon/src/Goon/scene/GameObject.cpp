@@ -9,7 +9,6 @@ namespace goon
     : _entityId(entityId), _scene(scene)
     {
         auto& tagComponent = _scene->Registry().get<TagComponent>(entityId);
-        printf("This guys name is %s", tagComponent.Tag.c_str());
     }
     GameObject::~GameObject()
     {
