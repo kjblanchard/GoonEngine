@@ -7,6 +7,7 @@
 #include <Goon/scene/Scene.hpp>
 #include <Goon/scene/GameObject.hpp>
 #include <Goon/core/bgm_asset.hpp>
+#include <Goon/systems/SoundSystem.hpp>
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 #include <Goon/scene/components/TagComponent.hpp>
@@ -20,7 +21,9 @@ int main(int argc, char **argv)
     auto boi = scene.CreateGameObject(name);
     name = "No u bro";
     auto boi2 = scene.CreateGameObject(name);
-    boi.AddComponent<goon::BgmComponent, std::string, float, float>("menu1.ogg", 0, 3333);
+    boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
+    boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
+    // boi.AddComponent<goon::BgmComponent, std::string, float, float>("rain.ogg", 0, 20);
     demo(scene);
 }
 
@@ -193,12 +196,13 @@ int demo(goon::Scene &scene)
         SDL_RenderClear(renderer);
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
-        auto view = scene.Registry().view<goon::BgmComponent>();
-        for (auto entity : view)
-        {
-            auto &bgm = view.get<goon::BgmComponent>(entity);
-            bgm.LoadedBgm.get()->Update();
-        }
+        // auto view = scene.Registry().view<goon::BgmComponent>();
+        UpdateSoundBro();
+        // for (auto entity : view)
+        // {
+        //     auto &bgm = view.get<goon::BgmComponent>(entity);
+        //     bgm.LoadedBgm.get()->Update();
+        // }
     }
 
     ImGui_ImplSDLRenderer_Shutdown();

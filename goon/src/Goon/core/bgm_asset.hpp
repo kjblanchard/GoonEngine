@@ -1,13 +1,13 @@
 #pragma once
 #include <Goon/core/asset.hpp>
 
-class Bgm;
+struct Bgm;
 namespace goon
 {
     class BgmAsset : public Asset
     {
     public:
-        BgmAsset(std::string filename, float begin = 0, float end = 0);
+        BgmAsset(std::string filename, float begin = 0, float end = 0, bool ambient = false);
         virtual ~BgmAsset() override;
         virtual void Load() override;
         virtual void *GetAsset() const override { return _bgm; }
@@ -19,5 +19,6 @@ namespace goon
     private:
         float _begin;
         float _end;
+        bool _ambient;
     };
 }
