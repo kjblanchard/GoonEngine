@@ -163,13 +163,13 @@ target_link_libraries(goonEngine
 target_include_directories(goonEngine
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        external/goon_sound/src
 
         PRIVATE
         external/imgui
         spdlog::spdlog
         external/glm/
         external/SDL
-        external/goon_sound/src
         external/entt/src
 )
 

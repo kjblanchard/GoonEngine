@@ -29,9 +29,9 @@ namespace goon
         _bgm->loop_end = _end;
         _bgm->is_ambient = (int)_ambient;
         _bgm->loops = -1;
-        float volume = _bgm->is_ambient ? 1.0 : 0.1;
+        // float volume = _bgm->is_ambient ? 1.0 : 0.1;
         // Load and start playback here for now
-        LoadBgm(_bgm, volume);
+        // LoadBgm(_bgm, volume);
         // PlayBgm(_bgm);
     }
 }

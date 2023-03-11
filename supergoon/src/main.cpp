@@ -2,6 +2,7 @@
 #include <memory>
 #include <SDL.h>
 #include <imgui.h>
+#include <cstring>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <Goon/scene/Scene.hpp>
@@ -21,9 +22,10 @@ int main(int argc, char **argv)
     auto boi = scene.CreateGameObject(name);
     name = "No u bro";
     auto boi2 = scene.CreateGameObject(name);
+    name = "No sound";
+    auto boi3 = scene.CreateGameObject(name);
     boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
     boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
-    // boi.AddComponent<goon::BgmComponent, std::string, float, float>("rain.ogg", 0, 20);
     demo(scene);
 }
 
@@ -166,27 +168,47 @@ int demo(goon::Scene &scene)
             ImGui::Text("GameObject %s", gameobject.GetComponent<goon::TagComponent>().Tag.c_str());
             if (gameobject.HasComponent<goon::BgmComponent>())
             {
-                if (ImGui::TreeNode("Bgm Component"))
+                if (ImGui::TreeNode((void *)(intptr_t)gameobject.GetID(), "Bgm Component "))
                 {
                     auto &bgmComponent = gameobject.GetComponent<goon::BgmComponent>();
                     ImGui::Text("Filename:");
                     ImGui::SameLine();
-                    ImGui::Text("Soundfile: %s", bgmComponent.SoundFile.c_str());
-                    ImGui::Text("Begin Point: %f", bgmComponent.LoopBegin);
-                    ImGui::Text("End Point: %f", bgmComponent.LoopEnd);
-                    if (ImGui::Button("Play"))
+                    char buffer[256];
+                    memset(buffer, 0, sizeof(buffer));
+                    snprintf(buffer, sizeof(buffer), "%s", bgmComponent.SoundFile.c_str());
+                    if (ImGui::InputText("##Filename", buffer, sizeof(buffer)))
                     {
 
+                        bgmComponent.UpdateSoundFileName(std::string(buffer));
+                    }
+                    ImGui::Text("Begin Point (s):");
+                    ImGui::SameLine();
+                    if (ImGui::InputFloat("##Begin", &bgmComponent.LoopBegin))
+                    {
+                        bgmComponent.UpdateLoopBegin(bgmComponent.LoopBegin);
+                    }
+                    ImGui::Text("End Point (s):");
+                    ImGui::SameLine();
+                    if (ImGui::InputFloat("##End", &bgmComponent.LoopEnd))
+                    {
+                        bgmComponent.UpdateLoopEnd(bgmComponent.LoopEnd);
+                    }
+                    ImGui::Text("Volume");
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("##Volume", &bgmComponent.Volume, 0.0f, 1.0f);
+                    if (ImGui::Button("Play"))
+                    {
+                        SSPlayBgm(bgmComponent.LoadedBgm.get()->_bgm, bgmComponent.Volume);
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("Pause"))
                     {
-
+                        SSPauseBgm(bgmComponent.LoadedBgm.get()->_bgm);
                     }
                     ImGui::TreePop();
                 }
-                ImGui::TreePop();
             }
+            // ImGui::TreePop();
         }
         ImGui::End();
 
