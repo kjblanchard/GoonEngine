@@ -12,11 +12,16 @@
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 #include <Goon/scene/components/TagComponent.hpp>
+#include <yaml-cpp/yaml.h>
 
 int demo(goon::Scene &scene);
 
 int main(int argc, char **argv)
 {
+    YAML::Emitter out;
+    out << "Hello, World!";
+    std::cout << "Here's the output YAML:\n"
+              << out.c_str();
     goon::Scene scene;
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
