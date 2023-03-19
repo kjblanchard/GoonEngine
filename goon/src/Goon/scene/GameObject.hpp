@@ -24,7 +24,7 @@ namespace goon
         {
             return _scene->Registry().get<T>(_entityId);
         }
-        uint64_t GetID() { return (uint64_t)_entityId; }
+        uint64_t GetID() const { return (uint64_t)_entityId; }
 
         template <typename T>
         bool HasComponent()

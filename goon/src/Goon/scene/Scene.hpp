@@ -14,6 +14,9 @@ namespace goon
         template<typename T>
 		void OnComponentAdded(GameObject entity, T& component);
 
+        void SerializeScene();
+        void DeSerializeScene();
+
     private:
         entt::registry _registry;
     };

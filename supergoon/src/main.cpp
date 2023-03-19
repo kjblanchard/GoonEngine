@@ -12,17 +12,13 @@
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 #include <Goon/scene/components/TagComponent.hpp>
-#include <yaml-cpp/yaml.h>
 
 int demo(goon::Scene &scene);
 
 int main(int argc, char **argv)
 {
-    YAML::Emitter out;
-    out << "Hello, World!";
-    std::cout << "Here's the output YAML:\n"
-              << out.c_str();
     goon::Scene scene;
+    scene.DeSerializeScene();
     std::string name = "Smart cookie";
     auto boi = scene.CreateGameObject(name);
     name = "No u bro";
@@ -31,6 +27,7 @@ int main(int argc, char **argv)
     auto boi3 = scene.CreateGameObject(name);
     boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
     boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
+    scene.SerializeScene();
     demo(scene);
 }
 
