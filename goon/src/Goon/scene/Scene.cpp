@@ -42,14 +42,13 @@ namespace goon
                        {
                 goon::GameObject go { entityID , this };
                 auto& tagComponent = go.GetComponent<goon::TagComponent>();
-                auto thing = std::to_string((uint64_t)entityID);
-                // out << YAML::BeginMap;
-                // out << YAML::Key << thing;
+                auto& idComponent = go.GetComponent<goon::IdComponent>();
+                uint64_t id = idComponent.Guid;
                 out << YAML::Value << YAML::BeginMap;
                 out << YAML::Key << "name";
                 out << YAML::Value << tagComponent;
                 out << YAML::Key << "id";
-                out << YAML::Value << thing;
+                out << YAML::Value << id;
                 out << YAML::Key << "components";
                 out << YAML::Value << YAML::BeginSeq;
                 if(go.HasComponent<goon::BgmComponent>())
@@ -102,6 +101,7 @@ namespace goon
         auto thing = _registry.create();
         _registry.emplace<TransformComponent>(thing);
         _registry.emplace<TagComponent>(thing, name);
+        _registry.emplace<IdComponent>(thing);
         return GameObject(thing, this);
     }
 
