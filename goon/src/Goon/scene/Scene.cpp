@@ -4,6 +4,7 @@
 #include <Goon/scene/components/TagComponent.hpp>
 #include <Goon/scene/components/TransformComponent.hpp>
 #include <Goon/scene/components/IdComponent.hpp>
+#include <Goon/scene/components/HierarchyComponent.hpp>
 
 // yml / file operations
 #include <yaml-cpp/yaml.h>
@@ -69,7 +70,6 @@ namespace goon
                     out << YAML::Value << bgmComponent.Volume;
                     out << YAML::EndMap << YAML::EndMap;
                 }
-                // out << YAML::EndSeq <<  YAML::EndMap << YAML::EndMap; });
                 out << YAML::EndSeq  << YAML::EndMap; });
         out << YAML::EndSeq;
         out << YAML::EndMap;
@@ -96,12 +96,13 @@ namespace goon
         }
     }
 
-    GameObject Scene::CreateGameObject(std::string &name)
+    GameObject Scene::CreateGameObject(std::string &name, entt::entity parent)
     {
         auto thing = _registry.create();
         _registry.emplace<TransformComponent>(thing);
         _registry.emplace<TagComponent>(thing, name);
         _registry.emplace<IdComponent>(thing);
+        _registry.emplace<HierarchyComponent>(thing);
         return GameObject(thing, this);
     }
 

@@ -8,7 +8,7 @@ namespace goon
     {
     public:
         Scene();
-        GameObject CreateGameObject(std::string &name);
+        GameObject CreateGameObject(std::string &name, entt::entity parent = entt::null);
 
         entt::registry& Registry() { return _registry; }
         template<typename T>
