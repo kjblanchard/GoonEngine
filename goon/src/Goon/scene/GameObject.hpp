@@ -21,6 +21,13 @@ namespace goon
             return _scene->Registry().get<T>(_entityId);
         }
         uint64_t GetID() const { return (uint64_t)_entityId; }
+        template <typename T>
+        void* GetComponentUniqueIntImGui()
+        {
+                return (void *)(intptr_t) (GetID() + typeid(T).hash_code() );
+
+        }
+        operator entt::entity() { return _entityId; }
 
         template <typename T>
         bool HasComponent()

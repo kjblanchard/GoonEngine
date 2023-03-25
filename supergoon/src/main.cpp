@@ -12,19 +12,26 @@
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 #include <Goon/scene/components/TagComponent.hpp>
+#include <Goon/scene/components/HierarchyComponent.hpp>
+#include <Goon/scene/components/IdComponent.hpp>
 
 int demo(goon::Scene &scene);
 
 int main(int argc, char **argv)
 {
     goon::Scene scene;
-    scene.DeSerializeScene();
-    std::string name = "Smart cookie";
+    // scene.DeSerializeScene();
+    std::string name = "RootObject";
+    auto rootObject = scene.CreateGameObject(name);
+    name = "SmartCookie";
     auto boi = scene.CreateGameObject(name);
+    rootObject.AddChildEntity(boi);
     name = "No u bro";
     auto boi2 = scene.CreateGameObject(name);
+    rootObject.AddChildEntity(boi2);
     name = "No sound";
     auto boi3 = scene.CreateGameObject(name);
+    rootObject.AddChildEntity(boi3);
     boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
     boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
     scene.SerializeScene();
@@ -210,7 +217,33 @@ int demo(goon::Scene &scene)
                     ImGui::TreePop();
                 }
             }
-            // ImGui::TreePop();
+            if (gameobject.HasComponent<goon::HierarchyComponent>())
+            {
+                auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::HierarchyComponent>();
+                if (ImGui::TreeNode(uniqueInt, "HierarchyComponent"))
+                {
+                    auto &hierarchyComponent = gameobject.GetComponent<goon::HierarchyComponent>();
+                    ImGui::Text("Parent: %d", hierarchyComponent.Parent);
+                    ImGui::Text("NextChild: %d", hierarchyComponent.NextChild);
+                    ImGui::Text("PrevChild: %d", hierarchyComponent.PreviousChild);
+                    ImGui::Text("FirstChild: %d", hierarchyComponent.FirstChild);
+                    ImGui::TreePop();
+                }
+
+            }
+            if (gameobject.HasComponent<goon::IdComponent>())
+            {
+                auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::IdComponent>();
+                if (ImGui::TreeNode(uniqueInt, "IdInfo"))
+                {
+                    auto &idComponent = gameobject.GetComponent<goon::IdComponent>();
+                    ImGui::Text("EntityId: %lld", gameobject.GetID());
+                    uint64_t guid = idComponent.Guid;
+                    ImGui::Text("Guid: %lld", guid);
+                    ImGui::TreePop();
+                }
+
+            }
         }
         ImGui::End();
 
