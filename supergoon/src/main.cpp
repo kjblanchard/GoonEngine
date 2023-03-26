@@ -21,8 +21,12 @@ int main(int argc, char **argv)
 {
     goon::Scene scene;
     // scene.DeSerializeScene();
+    // Set the root object.
     std::string name = "RootObject";
     auto rootObject = scene.CreateGameObject(name);
+    printf("Root object id is %lld", rootObject.GetID());
+    scene.RootObject = rootObject;
+
     name = "SmartCookie";
     auto boi = scene.CreateGameObject(name);
     rootObject.AddChildEntity(boi);
@@ -154,15 +158,30 @@ int demo(goon::Scene &scene)
         ////
         ImGui::Begin("Hierarchy");
         static int entitySelected = -1;
-        if (ImGui::TreeNode("Scene"))
+        goon::GameObject rootGo{scene.RootObject, &scene};
+        auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
+        entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
+        if (ImGui::TreeNode("RootObject"))
         {
+            while (currentDrawingEntity != entt::null)
+            {
+                goon::GameObject go{currentDrawingEntity, &scene};
+                auto &tagComponent = go.GetComponent<goon::TagComponent>();
+                if (ImGui::Selectable(tagComponent, go.GetID() == entitySelected))
+                    entitySelected = go.GetID();
+                auto &goHierarchy = go.GetComponent<goon::HierarchyComponent>();
+                currentDrawingEntity = goHierarchy.NextChild;
+            }
 
-            scene.Registry().each([&](auto entityID)
-                                  {
-                goon::GameObject go{ entityID , &scene };
-                auto& tagComponent = go.GetComponent<goon::TagComponent>();
-                if (ImGui::Selectable(tagComponent,  go.GetID() == entitySelected))
-                    entitySelected = go.GetID(); });
+            // scene.Registry().each([&](auto entityID)
+            //                       {
+
+            // goon::GameObject go{ entityID , &scene };
+            // auto& tagComponent = go.GetComponent<goon::TagComponent>();
+            // if (ImGui::Selectable(tagComponent,  go.GetID() == entitySelected))
+            //     entitySelected = go.GetID();
+
+            // });
             ImGui::TreePop();
         }
         ImGui::End();
@@ -229,7 +248,6 @@ int demo(goon::Scene &scene)
                     ImGui::Text("FirstChild: %d", hierarchyComponent.FirstChild);
                     ImGui::TreePop();
                 }
-
             }
             if (gameobject.HasComponent<goon::IdComponent>())
             {
@@ -242,7 +260,6 @@ int demo(goon::Scene &scene)
                     ImGui::Text("Guid: %lld", guid);
                     ImGui::TreePop();
                 }
-
             }
         }
         ImGui::End();

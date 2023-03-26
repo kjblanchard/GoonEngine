@@ -21,15 +21,20 @@ namespace goon
         if (parentHierarchyComponent.FirstChild == entt::null)
         {
             parentHierarchyComponent.FirstChild = parentHierarchyComponent.NextChild = child;
+            printf("Root first child is %lld, and next child is ", child, child);
             return;
         }
 
-        auto &hierarchyComponent = _scene->Registry().get<HierarchyComponent>(_entityId);
-        while (hierarchyComponent.NextChild != entt::null)
+        auto nextChild = parentHierarchyComponent.NextChild;
+        while (true)
         {
-            hierarchyComponent = _scene->Registry().get<HierarchyComponent>(hierarchyComponent.NextChild);
+            auto& hierarchy =  _scene->Registry().get<HierarchyComponent>(nextChild);
+            if(hierarchy.NextChild == entt::null)
+                break;
+            nextChild = hierarchy.NextChild;
         }
-        hierarchyComponent.NextChild = child;
+        auto& hierarchy =  _scene->Registry().get<HierarchyComponent>(nextChild);
+        hierarchy.NextChild = child;
     }
 
     void GameObject::AddParentEntity(entt::entity parent)

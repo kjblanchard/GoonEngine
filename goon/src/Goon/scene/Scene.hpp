@@ -17,6 +17,8 @@ namespace goon
         void SerializeScene();
         void DeSerializeScene();
 
+        entt::entity RootObject;
+
     private:
         entt::registry _registry;
     };
