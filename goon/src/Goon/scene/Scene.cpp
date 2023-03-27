@@ -38,19 +38,21 @@ namespace goon
         out << YAML::BeginMap;
         out << YAML::Key << "sceneName";
         out << YAML::Value << "default";
+        out << YAML::Key << "rootObject";
+        out << YAML::Value << GetGuidOfEntity(RootObject, *this);
         out << YAML::Key << "gameobjects";
-        out << YAML::Value << YAML::BeginSeq;
+        // out << YAML::Value << YAML::BeginSeq;
+        out << YAML::Value << YAML::BeginMap;
         _registry.each([&](auto entityID)
                        {
                 goon::GameObject go { entityID , this };
                 auto& tagComponent = go.GetComponent<goon::TagComponent>();
                 auto& idComponent = go.GetComponent<goon::IdComponent>();
                 uint64_t id = idComponent.Guid;
+                out << YAML::Key << id;
                 out << YAML::Value << YAML::BeginMap;
                 out << YAML::Key << "name";
                 out << YAML::Value << tagComponent;
-                out << YAML::Key << "id";
-                out << YAML::Value << id;
                 out << YAML::Key << "components";
                 out << YAML::Value << YAML::BeginSeq;
                 if(go.HasComponent<goon::BgmComponent>())
@@ -86,7 +88,7 @@ namespace goon
                     out << YAML::EndMap << YAML::EndMap;
                 }
                 out << YAML::EndSeq  << YAML::EndMap; });
-        out << YAML::EndSeq;
+        out << YAML::EndMap;
         out << YAML::EndMap;
         std::cout << out.c_str() << std::endl;
         std::ofstream outFile;
@@ -107,7 +109,14 @@ namespace goon
     {
         YAML::Node config = YAML::LoadFile("assets/default.yml");
         auto sceneName = config["sceneName"].as<std::string>();
-        printf("Name is %s", sceneName.c_str());
+        // printf("Name is %s", sceneName.c_str());
+        uint64_t nextEntityId = 0, currentEntityId = 0;
+        auto rootObject = Guid(config["rootObject"].as<uint64_t>());
+        //Create root Object
+
+        //Create all GameObjects.
+
+        // printf("%lld", rootObject);
         auto gameobjects = config["gameobjects"];
         if (gameobjects)
         {
@@ -129,5 +138,11 @@ namespace goon
         _registry.emplace<HierarchyComponent>(thing);
         return GameObject(thing, this);
     }
+
+}
+
+static entt::entity CreateGameObjectFromYaml(uint64_t& entityId, YAML::Node& gameObjectNode)
+{
+    // auto object = gameObjectNode[]
 
 }

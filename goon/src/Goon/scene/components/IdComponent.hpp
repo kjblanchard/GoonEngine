@@ -13,6 +13,7 @@ namespace goon
         IdComponent() = default;
         IdComponent(const IdComponent &) = default;
         IdComponent(IdComponent &&) = default;
+        IdComponent(Guid guid) : Guid(guid) {}
         Guid Guid;
     };
 }
