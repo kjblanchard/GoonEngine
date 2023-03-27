@@ -168,23 +168,7 @@ int demo(goon::Scene &scene)
             while (currentDrawingEntity != entt::null)
             {
                 currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, entitySelected);
-                // goon::GameObject go{currentDrawingEntity, &scene};
-                // auto &tagComponent = go.GetComponent<goon::TagComponent>();
-                // if (ImGui::Selectable(tagComponent, go.GetID() == entitySelected))
-                //     entitySelected = go.GetID();
-                // auto &goHierarchy = go.GetComponent<goon::HierarchyComponent>();
-                // currentDrawingEntity = goHierarchy.NextChild;
             }
-
-            // scene.Registry().each([&](auto entityID)
-            //                       {
-
-            // goon::GameObject go{ entityID , &scene };
-            // auto& tagComponent = go.GetComponent<goon::TagComponent>();
-            // if (ImGui::Selectable(tagComponent,  go.GetID() == entitySelected))
-            //     entitySelected = go.GetID();
-
-            // });
             ImGui::TreePop();
         }
         ImGui::End();

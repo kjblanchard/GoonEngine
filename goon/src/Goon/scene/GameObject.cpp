@@ -21,7 +21,6 @@ namespace goon
         if (parentHierarchyComponent.FirstChild == entt::null)
         {
             parentHierarchyComponent.FirstChild = child;
-            printf("Root first child is %lld, and next child is ", child, child);
             return;
         }
 

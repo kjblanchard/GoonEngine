@@ -30,6 +30,7 @@ namespace goon
     Scene::Scene()
     {
     }
+    Guid GetGuidOfEntity(entt::entity entity, Scene &scene);
 
     void Scene::SerializeScene()
     {
@@ -70,6 +71,20 @@ namespace goon
                     out << YAML::Value << bgmComponent.Volume;
                     out << YAML::EndMap << YAML::EndMap;
                 }
+                if(go.HasComponent<goon::HierarchyComponent>())
+                {
+                    auto& hierarchyComponent = go.GetComponent<goon::HierarchyComponent>();
+                    out << YAML::BeginMap;
+                    out << YAML::Key << "hierarchy";
+                    out << YAML::Value << YAML::BeginMap;
+                    out << YAML::Key << "firstChild";
+                    out << YAML::Value << GetGuidOfEntity(hierarchyComponent.FirstChild, *this);
+                    out << YAML::Key << "nextChild";
+                    out << YAML::Value << GetGuidOfEntity(hierarchyComponent.NextChild, *this);
+                    out << YAML::Key << "parent";
+                    out << YAML::Value << GetGuidOfEntity(hierarchyComponent.Parent, *this);
+                    out << YAML::EndMap << YAML::EndMap;
+                }
                 out << YAML::EndSeq  << YAML::EndMap; });
         out << YAML::EndSeq;
         out << YAML::EndMap;
@@ -79,15 +94,24 @@ namespace goon
         outFile << out.c_str();
     }
 
+    Guid GetGuidOfEntity(entt::entity entity, Scene &scene)
+    {
+        if (entity == entt::null)
+            return 0;
+        goon::GameObject go{entity, &scene};
+        auto &thing = go.GetComponent<IdComponent>();
+        return thing.Guid;
+    }
+
     void Scene::DeSerializeScene()
     {
         YAML::Node config = YAML::LoadFile("assets/default.yml");
         auto sceneName = config["sceneName"].as<std::string>();
         printf("Name is %s", sceneName.c_str());
         auto gameobjects = config["gameobjects"];
-        if(gameobjects)
+        if (gameobjects)
         {
-            for(auto gameobject: gameobjects)
+            for (auto gameobject : gameobjects)
             {
                 auto name = gameobject["name"].as<std::string>();
                 auto id = gameobject["id"].as<uint64_t>();
