@@ -20,20 +20,20 @@ namespace goon
         auto &parentHierarchyComponent = _scene->Registry().get<HierarchyComponent>(_entityId);
         if (parentHierarchyComponent.FirstChild == entt::null)
         {
-            parentHierarchyComponent.FirstChild = parentHierarchyComponent.NextChild = child;
+            parentHierarchyComponent.FirstChild = child;
             printf("Root first child is %lld, and next child is ", child, child);
             return;
         }
 
-        auto nextChild = parentHierarchyComponent.NextChild;
+        auto nextChild = parentHierarchyComponent.FirstChild;
         while (true)
         {
-            auto& hierarchy =  _scene->Registry().get<HierarchyComponent>(nextChild);
-            if(hierarchy.NextChild == entt::null)
+            auto &hierarchy = _scene->Registry().get<HierarchyComponent>(nextChild);
+            if (hierarchy.NextChild == entt::null)
                 break;
             nextChild = hierarchy.NextChild;
         }
-        auto& hierarchy =  _scene->Registry().get<HierarchyComponent>(nextChild);
+        auto &hierarchy = _scene->Registry().get<HierarchyComponent>(nextChild);
         hierarchy.NextChild = child;
     }
 
