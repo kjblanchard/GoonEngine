@@ -1,6 +1,10 @@
 #pragma once
 #include <entt/entity/registry.hpp>
 
+namespace YAML
+{
+    class Node;
+}
 namespace goon
 {
     class GameObject;
@@ -21,5 +25,6 @@ namespace goon
 
     private:
         entt::registry _registry;
+        entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
     };
 }

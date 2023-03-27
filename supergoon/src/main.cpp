@@ -21,7 +21,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &
 int main(int argc, char **argv)
 {
     goon::Scene scene;
-    // scene.DeSerializeScene();
+    scene.DeSerializeScene();
     // Set the root object.
     std::string name = "RootObject";
     auto rootObject = scene.CreateGameObject(name);
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     rootObject.AddChildEntity(boi3);
     boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
     boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
-    scene.SerializeScene();
+    // scene.SerializeScene();
     demo(scene);
 }
 

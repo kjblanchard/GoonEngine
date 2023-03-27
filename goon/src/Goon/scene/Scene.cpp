@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 
+static entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
 namespace goon
 {
     ////////////////////
@@ -58,9 +59,10 @@ namespace goon
                 if(go.HasComponent<goon::BgmComponent>())
                 {
                     auto& bgmComponent = go.GetComponent<goon::BgmComponent>();
+                    // make the object
                     out << YAML::BeginMap;
-                    out << YAML::Key << "bgm";
-                    out << YAML::Value << YAML::BeginMap;
+                    out << YAML::Key << "componentName";
+                    out << YAML::Value << "bgm";
                     out << YAML::Key << "fileName";
                     out << YAML::Value << bgmComponent.SoundFile;
                     out << YAML::Key << "loopBegin";
@@ -71,21 +73,21 @@ namespace goon
                     out << YAML::Value << bgmComponent.Ambient;
                     out << YAML::Key << "volume";
                     out << YAML::Value << bgmComponent.Volume;
-                    out << YAML::EndMap << YAML::EndMap;
+                    out << YAML::EndMap;
                 }
                 if(go.HasComponent<goon::HierarchyComponent>())
                 {
                     auto& hierarchyComponent = go.GetComponent<goon::HierarchyComponent>();
                     out << YAML::BeginMap;
-                    out << YAML::Key << "hierarchy";
-                    out << YAML::Value << YAML::BeginMap;
+                    out << YAML::Key << "componentName";
+                    out << YAML::Value << "hierarchy";
                     out << YAML::Key << "firstChild";
                     out << YAML::Value << GetGuidOfEntity(hierarchyComponent.FirstChild, *this);
                     out << YAML::Key << "nextChild";
                     out << YAML::Value << GetGuidOfEntity(hierarchyComponent.NextChild, *this);
                     out << YAML::Key << "parent";
                     out << YAML::Value << GetGuidOfEntity(hierarchyComponent.Parent, *this);
-                    out << YAML::EndMap << YAML::EndMap;
+                    out << YAML::EndMap;
                 }
                 out << YAML::EndSeq  << YAML::EndMap; });
         out << YAML::EndMap;
@@ -109,24 +111,13 @@ namespace goon
     {
         YAML::Node config = YAML::LoadFile("assets/default.yml");
         auto sceneName = config["sceneName"].as<std::string>();
-        // printf("Name is %s", sceneName.c_str());
-        uint64_t nextEntityId = 0, currentEntityId = 0;
+        // uint64_t nextEntityId = 0, currentEntityId = 0;
         auto rootObject = Guid(config["rootObject"].as<uint64_t>());
-        //Create root Object
-
-        //Create all GameObjects.
-
-        // printf("%lld", rootObject);
         auto gameobjects = config["gameobjects"];
-        if (gameobjects)
-        {
-            for (auto gameobject : gameobjects)
-            {
-                auto name = gameobject["name"].as<std::string>();
-                auto id = gameobject["id"].as<uint64_t>();
-                printf("Object: name %s id %ull", name.c_str(), id);
-            }
-        }
+        // TODO replace the exit
+        if (!gameobjects)
+            exit(1);
+        CreateGameObjectFromYaml(rootObject, gameobjects);
     }
 
     GameObject Scene::CreateGameObject(std::string &name, entt::entity parent)
@@ -139,10 +130,26 @@ namespace goon
         return GameObject(thing, this);
     }
 
-}
+    entt::entity Scene::CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode)
+    {
+        auto goData = gameObjectNode[entityId];
+        auto goEntity = _registry.create();
+        _registry.emplace<TransformComponent>(goEntity);
+        auto name = goData["name"].as<std::string>();
+        _registry.emplace<TagComponent>(goEntity, name);
+        _registry.emplace<IdComponent>(goEntity, entityId);
+        _registry.emplace<HierarchyComponent>(goEntity);
+        // If hierarchy.firstchild, firstchild = Recursive
+        auto components = goData["components"];
+        for(auto component : components )
+        {
+            auto componentName = component["componentName"].as<std::string>();
+            // Try and create all of the component types.
 
-static entt::entity CreateGameObjectFromYaml(uint64_t& entityId, YAML::Node& gameObjectNode)
-{
-    // auto object = gameObjectNode[]
+        }
+        return goEntity;
+        // If hierarchy.nextchild, nextchild = recursive
+        // end
+    }
 
 }
