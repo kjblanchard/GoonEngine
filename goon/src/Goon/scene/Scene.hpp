@@ -25,6 +25,6 @@ namespace goon
 
     private:
         entt::registry _registry;
-        entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
+    entt::entity CreateGameObjectFromYaml(uint64_t entityId, entt::entity parent, YAML::Node &gameObjectNode);
     };
 }

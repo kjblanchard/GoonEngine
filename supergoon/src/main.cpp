@@ -22,24 +22,24 @@ int main(int argc, char **argv)
 {
     goon::Scene scene;
     scene.DeSerializeScene();
-    // Set the root object.
-    std::string name = "RootObject";
-    auto rootObject = scene.CreateGameObject(name);
-    printf("Root object id is %lld", rootObject.GetID());
-    scene.RootObject = rootObject;
+    // // Set the root object.
+    // std::string name = "RootObject";
+    // auto rootObject = scene.CreateGameObject(name);
+    // printf("Root object id is %lld", rootObject.GetID());
+    // scene.RootObject = rootObject;
 
-    name = "SmartCookie";
-    auto boi = scene.CreateGameObject(name);
-    rootObject.AddChildEntity(boi);
-    name = "No u bro";
-    auto boi2 = scene.CreateGameObject(name);
+    // name = "SmartCookie";
+    // auto boi = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi);
+    // name = "No u bro";
+    // auto boi2 = scene.CreateGameObject(name);
     // rootObject.AddChildEntity(boi2);
-    boi.AddChildEntity(boi2);
-    name = "No sound";
-    auto boi3 = scene.CreateGameObject(name);
-    rootObject.AddChildEntity(boi3);
-    boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
-    boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
+    // boi.AddChildEntity(boi2);
+    // name = "No sound";
+    // auto boi3 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi3);
+    // boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
+    // boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
     // scene.SerializeScene();
     demo(scene);
 }
