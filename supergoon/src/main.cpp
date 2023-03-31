@@ -12,20 +12,36 @@
 #include <Goon/core/asset_manager.hpp>
 #include <Goon/scene/components/BgmComponent.hpp>
 #include <Goon/scene/components/TagComponent.hpp>
+#include <Goon/scene/components/HierarchyComponent.hpp>
+#include <Goon/scene/components/IdComponent.hpp>
+#include <Supergoon/commands/Action.hpp>
 
 int demo(goon::Scene &scene);
+static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &entitySelected);
 
 int main(int argc, char **argv)
 {
     goon::Scene scene;
-    std::string name = "Smart cookie";
-    auto boi = scene.CreateGameObject(name);
-    name = "No u bro";
-    auto boi2 = scene.CreateGameObject(name);
-    name = "No sound";
-    auto boi3 = scene.CreateGameObject(name);
-    boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
-    boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
+    scene.DeSerializeScene();
+    // // Set the root object.
+    // std::string name = "RootObject";
+    // auto rootObject = scene.CreateGameObject(name);
+    // printf("Root object id is %lld", rootObject.GetID());
+    // scene.RootObject = rootObject;
+
+    // name = "SmartCookie";
+    // auto boi = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi);
+    // name = "No u bro";
+    // auto boi2 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi2);
+    // boi.AddChildEntity(boi2);
+    // name = "No sound";
+    // auto boi3 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi3);
+    // boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
+    // boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
+    // scene.SerializeScene();
     demo(scene);
 }
 
@@ -124,7 +140,10 @@ int demo(goon::Scene &scene)
         {
             if (ImGui::BeginMenu("File"))
             {
-                ImGui::Text("Save");
+                if(ImGui::MenuItem("Save", "ctrl + s"))
+                {
+                    scene.SerializeScene();
+                }
                 ImGui::Text("Load");
                 ImGui::EndMenu();
             }
@@ -145,15 +164,22 @@ int demo(goon::Scene &scene)
         ////
         ImGui::Begin("Hierarchy");
         static int entitySelected = -1;
-        if (ImGui::TreeNode("Scene"))
-        {
 
-            scene.Registry().each([&](auto entityID)
-                                  {
-                goon::GameObject go{ entityID , &scene };
-                auto& tagComponent = go.GetComponent<goon::TagComponent>();
-                if (ImGui::Selectable(tagComponent,  go.GetID() == entitySelected))
-                    entitySelected = go.GetID(); });
+        if (ImGui::BeginPopupContextItem("Hierarchy"))
+        {
+            ImGui::Text("Hello");
+            ImGui::EndPopup();
+        }
+        goon::GameObject rootGo{scene.RootObject, &scene};
+        auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
+        entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
+        // if (ImGui::TreeNode("RootObject"))
+        if (ImGui::TreeNode(scene.SceneName().c_str()))
+        {
+            while (currentDrawingEntity != entt::null)
+            {
+                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, entitySelected);
+            }
             ImGui::TreePop();
         }
         ImGui::End();
@@ -208,7 +234,31 @@ int demo(goon::Scene &scene)
                     ImGui::TreePop();
                 }
             }
-            // ImGui::TreePop();
+            if (gameobject.HasComponent<goon::HierarchyComponent>())
+            {
+                auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::HierarchyComponent>();
+                if (ImGui::TreeNode(uniqueInt, "HierarchyComponent"))
+                {
+                    auto &hierarchyComponent = gameobject.GetComponent<goon::HierarchyComponent>();
+                    ImGui::Text("Parent: %d", hierarchyComponent.Parent);
+                    ImGui::Text("NextChild: %d", hierarchyComponent.NextChild);
+                    ImGui::Text("PrevChild: %d", hierarchyComponent.PreviousChild);
+                    ImGui::Text("FirstChild: %d", hierarchyComponent.FirstChild);
+                    ImGui::TreePop();
+                }
+            }
+            if (gameobject.HasComponent<goon::IdComponent>())
+            {
+                auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::IdComponent>();
+                if (ImGui::TreeNode(uniqueInt, "IdInfo"))
+                {
+                    auto &idComponent = gameobject.GetComponent<goon::IdComponent>();
+                    ImGui::Text("EntityId: %lld", gameobject.GetID());
+                    uint64_t guid = idComponent.Guid;
+                    ImGui::Text("Guid: %llu", guid);
+                    ImGui::TreePop();
+                }
+            }
         }
         ImGui::End();
 
@@ -234,4 +284,34 @@ int demo(goon::Scene &scene)
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
+}
+
+static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &entitySelected)
+{
+    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    goon::GameObject gameobject{entity, &scene};
+    auto &hierarchyComponent = gameobject.GetComponent<goon::HierarchyComponent>();
+    auto &tagComponent = gameobject.GetComponent<goon::TagComponent>();
+    if (hierarchyComponent.FirstChild == entt::null)
+    {
+        if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
+            entitySelected = gameobject.GetID();
+    }
+    else
+    {
+        auto node_flags = base_flags;
+        if (entitySelected == gameobject.GetID())
+        {
+            node_flags |= 1 << 0;
+        }
+        bool node_open = ImGui::TreeNodeEx(tagComponent.Tag.c_str(), node_flags);
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+            entitySelected = gameobject.GetID();
+        if (node_open)
+        {
+            RecursiveDraw(hierarchyComponent.FirstChild, scene, entitySelected);
+            ImGui::TreePop();
+        }
+    }
+    return hierarchyComponent.NextChild;
 }

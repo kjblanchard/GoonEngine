@@ -40,7 +40,6 @@ if(UNIX AND NOT APPLE)
         set(LINUX ON)
 endif(UNIX AND NOT APPLE)
 
-
 # #########################################
 # Options
 # #########################################
@@ -73,12 +72,14 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
         endif()
 endif()
 
+# #########################################
+# Build dependencies
+# #########################################
 # spdlog
 add_subdirectory(external/spdlog EXCLUDE_FROM_ALL)
 
 # SDL
 add_subdirectory(external/SDL EXCLUDE_FROM_ALL)
-
 
 # entt
 add_subdirectory(external/entt EXCLUDE_FROM_ALL)
@@ -89,7 +90,8 @@ add_subdirectory(external/glm EXCLUDE_FROM_ALL)
 # goon_sound
 add_subdirectory(external/goon_sound EXCLUDE_FROM_ALL)
 
-
+# yaml
+add_subdirectory(external/yaml-cpp EXCLUDE_FROM_ALL)
 
 # #########################################
 # For Debug, print aout all variables.
@@ -148,7 +150,6 @@ target_compile_options(goonEngine PRIVATE
 # #########################################
 # Linking Options
 # #########################################
-
 target_link_libraries(goonEngine
         PUBLIC
         spdlog::spdlog
@@ -156,6 +157,7 @@ target_link_libraries(goonEngine
         SDL2::SDL2
         EnTT::EnTT
         goon_sound
+        yaml-cpp
 
         PRIVATE
 )
@@ -171,6 +173,7 @@ target_include_directories(goonEngine
         external/glm/
         external/SDL
         external/entt/src
+        external/yaml-cpp/include
 )
 
 # #########################################

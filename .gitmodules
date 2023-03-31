@@ -19,3 +19,6 @@
 [submodule "supergoon/external/imgui"]
 	path = supergoon/external/imgui
 	url = git@github.com:kjblanchard/imgui.git
+[submodule "goon/external/yaml-cpp"]
+	path = goon/external/yaml-cpp
+	url = git@github.com:jbeder/yaml-cpp.git
