@@ -164,6 +164,12 @@ int demo(goon::Scene &scene)
         ////
         ImGui::Begin("Hierarchy");
         static int entitySelected = -1;
+
+        if (ImGui::BeginPopupContextItem("Hierarchy"))
+        {
+            ImGui::Text("Hello");
+            ImGui::EndPopup();
+        }
         goon::GameObject rootGo{scene.RootObject, &scene};
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
         entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
@@ -249,7 +255,7 @@ int demo(goon::Scene &scene)
                     auto &idComponent = gameobject.GetComponent<goon::IdComponent>();
                     ImGui::Text("EntityId: %lld", gameobject.GetID());
                     uint64_t guid = idComponent.Guid;
-                    ImGui::Text("Guid: %lld", guid);
+                    ImGui::Text("Guid: %llu", guid);
                     ImGui::TreePop();
                 }
             }
