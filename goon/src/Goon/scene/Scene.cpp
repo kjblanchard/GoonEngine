@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 
-static entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
+// static entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
 namespace goon
 {
     ////////////////////
@@ -38,7 +38,7 @@ namespace goon
         YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "sceneName";
-        out << YAML::Value << "default";
+        out << YAML::Value << _sceneName;
         out << YAML::Key << "rootObject";
         out << YAML::Value << GetGuidOfEntity(RootObject, *this);
         out << YAML::Key << "gameobjects";
@@ -94,7 +94,7 @@ namespace goon
         out << YAML::EndMap;
         std::cout << out.c_str() << std::endl;
         std::ofstream outFile;
-        outFile.open("assets/default2.yml", std::ios::trunc);
+        outFile.open("assets/" + _sceneName + ".yml", std::ios::trunc);
         outFile << out.c_str();
     }
 
@@ -109,7 +109,7 @@ namespace goon
 
     void Scene::DeSerializeScene()
     {
-        YAML::Node config = YAML::LoadFile("assets/default2.yml");
+        YAML::Node config = YAML::LoadFile("assets/" + _sceneName + ".yml");
         auto sceneName = config["sceneName"].as<std::string>();
         // uint64_t nextEntityId = 0, currentEntityId = 0;
         auto rootObject = Guid(config["rootObject"].as<uint64_t>());
