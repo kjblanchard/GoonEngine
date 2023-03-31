@@ -14,6 +14,7 @@
 #include <Goon/scene/components/TagComponent.hpp>
 #include <Goon/scene/components/HierarchyComponent.hpp>
 #include <Goon/scene/components/IdComponent.hpp>
+#include <Supergoon/commands/Action.hpp>
 
 int demo(goon::Scene &scene);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &entitySelected);
@@ -22,6 +23,10 @@ int main(int argc, char **argv)
 {
     goon::Scene scene;
     scene.DeSerializeScene();
+    int bro = 2;
+    auto thing = goon::Action<int>{1, 2, bro};
+    printf("Thing is %d", bro);
+    std::cout << std::endl;
     // // Set the root object.
     // std::string name = "RootObject";
     // auto rootObject = scene.CreateGameObject(name);
