@@ -127,7 +127,14 @@ namespace goon
         _registry.emplace<TagComponent>(thing, name);
         _registry.emplace<IdComponent>(thing);
         _registry.emplace<HierarchyComponent>(thing);
-        return GameObject(thing, this);
+        auto guy = GameObject(thing, this);
+        if(parent != entt::null)
+        {
+            auto parentGo = GameObject(parent, this);
+            parentGo.AddChildEntity(guy);
+
+        }
+        return guy;
     }
 
     entt::entity Scene::CreateGameObjectFromYaml(uint64_t entityId, entt::entity parent, YAML::Node &gameObjectNode)

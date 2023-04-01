@@ -22,10 +22,9 @@ namespace goon
         }
         uint64_t GetID() const { return (uint64_t)_entityId; }
         template <typename T>
-        void* GetComponentUniqueIntImGui()
+        void *GetComponentUniqueIntImGui()
         {
-                return (void *)(intptr_t) (GetID() + typeid(T).hash_code() );
-
+            return (void *)(intptr_t)(GetID() + typeid(T).hash_code());
         }
         operator entt::entity() { return _entityId; }
 
@@ -41,16 +40,16 @@ namespace goon
          * @param child The child to add to this gameobjects hierarchy component
          */
         void AddChildEntity(entt::entity child);
+
+    private:
+        entt::entity _entityId;
+        Scene *_scene;
         /**
          * @brief Adds a parent to this gameobject
          *
          * @param parent The new parent for this gameobject
          */
         void AddParentEntity(entt::entity parent);
-
-    private:
-        entt::entity _entityId;
-        Scene *_scene;
     };
 
 }
