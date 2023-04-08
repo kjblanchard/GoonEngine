@@ -21,6 +21,11 @@ namespace goon
             return _scene->Registry().get<T>(_entityId);
         }
         uint64_t GetID() const { return (uint64_t)_entityId; }
+        void* GetGameobjectUniqueIntImgui()
+        {
+            return (void *)(intptr_t)(GetID() + typeid(GameObject).hash_code());
+
+        }
         template <typename T>
         void *GetComponentUniqueIntImGui()
         {

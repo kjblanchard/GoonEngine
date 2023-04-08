@@ -14,65 +14,18 @@
 #include <Goon/scene/components/TagComponent.hpp>
 #include <Goon/scene/components/HierarchyComponent.hpp>
 #include <Goon/scene/components/IdComponent.hpp>
+#include <Goon/scene/components/InactiveComponent.hpp>
 #include <Supergoon/commands/Action.hpp>
 
 int demo(goon::Scene &scene);
-static void CreateImGuiPopup(const char *entityTag, goon::Scene& scene, entt::entity parentEntity = entt::null);
-static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &entitySelected);
+static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
+static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
+static int entitySelected = -1;
 
 int main(int argc, char **argv)
 {
     goon::Scene scene;
     scene.DeSerializeScene();
-    // // Set the root object.
-    // std::string name = "RootObject";
-    // auto rootObject = scene.CreateGameObject(name);
-    // // printf("Root object id is %lld", rootObject.GetID());
-    // scene.RootObject = rootObject;
-
-    // for (size_t i = 0; i < 5; i++)
-    // {
-    //     name = "SmartCookie" + std::to_string(i);
-    //     auto boi = scene.CreateGameObject(name);
-    //     rootObject.AddChildEntity(boi);
-    // }
-    // name = "Nest";
-    // auto boi = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi);
-    // name = "Nest1";
-    // auto boi1 = scene.CreateGameObject(name);
-    // boi.AddChildEntity(boi1);
-    // name = "Nest2";
-    // auto boi2 = scene.CreateGameObject(name);
-    // boi1.AddChildEntity(boi2);
-
-    // name = "Nest3";
-    // auto boi3 = scene.CreateGameObject(name);
-    // boi1.AddChildEntity(boi3);
-
-    // name = "Nest4";
-    // auto boi4 = scene.CreateGameObject(name);
-    // boi1.AddChildEntity(boi4);
-
-    // name = "NoParent";
-    // auto boi5 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi5);
-    // name = "Nest";
-    // auto boi6 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi6);
-    // name = "Nest1";
-    // auto boi7 = scene.CreateGameObject(name);
-    // boi6.AddChildEntity(boi7);
-
-    // name = "No u bro";
-    // auto boi2 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi2);
-    // boi.AddChildEntity(boi2);
-    // name = "No sound";
-    // auto boi3 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi3);
-    // boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
-    // boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
     // scene.SerializeScene();
     demo(scene);
 }
@@ -152,7 +105,7 @@ int demo(goon::Scene &scene)
         }
 
 // Start the Dear ImGui frame
-// If Apple.
+// If Apple, make sure that the screen is the correct size on highdpi
 #ifdef GN_PLATFORM_MACOS
         int width, height, rwidth, rheight;
         float scalex, scaley;
@@ -195,7 +148,6 @@ int demo(goon::Scene &scene)
         // Hierarchy Panel
         ////
         ImGui::Begin("Hierarchy");
-        static int entitySelected = -1;
 
         goon::GameObject rootGo{scene.RootObject, &scene};
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
@@ -203,10 +155,11 @@ int demo(goon::Scene &scene)
         // if (ImGui::TreeNode("RootObject"))
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
+            CreateImGuiPopup(scene, rootGo);
 
             while (currentDrawingEntity != entt::null)
             {
-                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, entitySelected);
+                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene);
             }
             ImGui::TreePop();
         }
@@ -309,25 +262,22 @@ int demo(goon::Scene &scene)
     return 0;
 }
 
-static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &entitySelected)
+static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
 {
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
     goon::GameObject gameobject{entity, &scene};
     auto &hierarchyComponent = gameobject.GetComponent<goon::HierarchyComponent>();
     auto &tagComponent = gameobject.GetComponent<goon::TagComponent>();
+    bool isInactive = gameobject.HasComponent<goon::InactiveComponent>();
+    if (isInactive) // Try next child if we are inactive, this breaks out early.
+        return hierarchyComponent.NextChild;
     if (hierarchyComponent.FirstChild == entt::null)
     {
+        ImGui::PushID(gameobject.GetGameobjectUniqueIntImgui());
         if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
             entitySelected = gameobject.GetID();
-        CreateImGuiPopup(tagComponent.Tag.c_str(), scene, (entt::entity)entitySelected);
-        // Create popup menu for a gameobject without children.
-        // if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
-        // {
-        //     ImGui::Text("This a popup for \"%s\"!", tagComponent.Tag.c_str());
-        //     if (ImGui::Button("Close"))
-        //         ImGui::CloseCurrentPopup();
-        //     ImGui::EndPopup();
-        // }
+        ImGui::PopID();
+        CreateImGuiPopup(scene, entity);
     }
     else
     {
@@ -336,29 +286,18 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &
         {
             node_flags |= 1 << 0;
         }
-        bool node_open = ImGui::TreeNodeEx(gameobject.GetComponentUniqueIntImGui<goon::TagComponent>(), node_flags, tagComponent.Tag.c_str());
+        // bool node_open = ImGui::TreeNodeEx(gameobject.GetComponentUniqueIntImGui<goon::TagComponent>(), node_flags, tagComponent.Tag.c_str());
+        bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             entitySelected = gameobject.GetID();
 
-        CreateImGuiPopup(tagComponent.Tag.c_str(), scene, (entt::entity)entitySelected);
-        // Create popup menu for a parent gameobject.
-        // if (ImGui::BeginPopupContextItem(tagComponent.Tag.c_str())) // <-- use last item id as popup id
-        // {
-        //     ImGui::Text("This a popup for \"%s\"!", tagComponent.Tag.c_str());
-        //     if (ImGui::Button("Create Gameobject in root"))
-        //     {
-        //         std::string name = "Unnamed";
-        //         scene.CreateGameObject(name, scene.RootObject);
-        //         ImGui::CloseCurrentPopup();
-        //     }
-        //     ImGui::EndPopup();
-        // }
+        CreateImGuiPopup(scene, entity);
         if (node_open)
         {
             auto nextChild = hierarchyComponent.FirstChild;
             while (nextChild != entt::null)
             {
-                nextChild = RecursiveDraw(nextChild, scene, entitySelected);
+                nextChild = RecursiveDraw(nextChild, scene);
             }
             ImGui::TreePop();
         }
@@ -366,22 +305,84 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, int &
     return hierarchyComponent.NextChild;
 }
 
-static void CreateImGuiPopup(const char* entityTag, goon::Scene& scene, entt::entity parentEntity)
+// TODO we need to change this from int to uint64_t
+static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked)
 {
     if (ImGui::BeginPopupContextItem(nullptr)) // entityTag is used as a id for the popup
     {
+        entitySelected = (uint64_t)entityRightClicked;
         std::string name = "Unnamed";
-        // ImGui::Text("Options", tagComponent.Tag.c_str());
+
         if (ImGui::Button("Create Gameobject at root"))
         {
             scene.CreateGameObject(name, scene.RootObject);
             ImGui::CloseCurrentPopup();
         }
-        if (ImGui::Button("Create child Gameobject"))
+        if (scene.RootObject != entityRightClicked)
         {
-            scene.CreateGameObject(name, parentEntity);
-            ImGui::CloseCurrentPopup();
+            if (ImGui::Button("Create child Gameobject"))
+            {
+                scene.CreateGameObject(name, entityRightClicked);
+                ImGui::CloseCurrentPopup();
+            }
+            if (ImGui::Button("Delete GameObject"))
+            {
+                scene.DestroyGameObject(entitySelected);
+                ImGui::CloseCurrentPopup();
+            }
         }
         ImGui::EndPopup();
     }
+}
+
+static void InitializeGameobjects()
+{
+    // std::string name = "RootObject";
+    // auto rootObject = scene.CreateGameObject(name);
+    // // printf("Root object id is %lld", rootObject.GetID());
+    // scene.RootObject = rootObject;
+
+    // for (size_t i = 0; i < 5; i++)
+    // {
+    //     name = "SmartCookie" + std::to_string(i);
+    //     auto boi = scene.CreateGameObject(name);
+    //     rootObject.AddChildEntity(boi);
+    // }
+    // name = "Nest";
+    // auto boi = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi);
+    // name = "Nest1";
+    // auto boi1 = scene.CreateGameObject(name);
+    // boi.AddChildEntity(boi1);
+    // name = "Nest2";
+    // auto boi2 = scene.CreateGameObject(name);
+    // boi1.AddChildEntity(boi2);
+
+    // name = "Nest3";
+    // auto boi3 = scene.CreateGameObject(name);
+    // boi1.AddChildEntity(boi3);
+
+    // name = "Nest4";
+    // auto boi4 = scene.CreateGameObject(name);
+    // boi1.AddChildEntity(boi4);
+
+    // name = "NoParent";
+    // auto boi5 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi5);
+    // name = "Nest";
+    // auto boi6 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi6);
+    // name = "Nest1";
+    // auto boi7 = scene.CreateGameObject(name);
+    // boi6.AddChildEntity(boi7);
+
+    // name = "No u bro";
+    // auto boi2 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi2);
+    // boi.AddChildEntity(boi2);
+    // name = "No sound";
+    // auto boi3 = scene.CreateGameObject(name);
+    // rootObject.AddChildEntity(boi3);
+    // boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
+    // boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
 }

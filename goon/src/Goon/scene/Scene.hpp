@@ -13,6 +13,7 @@ namespace goon
     public:
         Scene();
         GameObject CreateGameObject(std::string &name, entt::entity parent = entt::null);
+        void DestroyGameObject(uint64_t entityId);
 
         entt::registry &Registry() { return _registry; }
         template <typename T>
