@@ -15,6 +15,7 @@
 // static entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
 namespace goon
 {
+
     ////////////////////
     // Yml emitters
     ////////////////////

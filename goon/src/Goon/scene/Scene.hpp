@@ -7,6 +7,11 @@ namespace YAML
 }
 namespace goon
 {
+    enum class GameObjectComponents
+    {
+        None = 0,
+        BGM = 1,
+    };
     class GameObject;
     class Scene
     {

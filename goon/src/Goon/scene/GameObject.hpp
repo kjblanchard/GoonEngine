@@ -21,10 +21,9 @@ namespace goon
             return _scene->Registry().get<T>(_entityId);
         }
         uint64_t GetID() const { return (uint64_t)_entityId; }
-        void* GetGameobjectUniqueIntImgui()
+        void *GetGameobjectUniqueIntImgui()
         {
             return (void *)(intptr_t)(GetID() + typeid(GameObject).hash_code());
-
         }
         template <typename T>
         void *GetComponentUniqueIntImGui()
@@ -37,6 +36,13 @@ namespace goon
         bool HasComponent()
         {
             return _scene->Registry().all_of<T>(_entityId);
+        }
+        template <typename T>
+        void RemoveComponent()
+        {
+            if (!HasComponent<T>())
+                return;
+            _scene->Registry().remove<T>(_entityId);
         }
 
         /**

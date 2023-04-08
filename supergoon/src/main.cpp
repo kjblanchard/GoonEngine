@@ -21,6 +21,8 @@ int demo(goon::Scene &scene);
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
 static int entitySelected = -1;
+template <typename T>
+static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
 
 int main(int argc, char **argv)
 {
@@ -173,49 +175,56 @@ int demo(goon::Scene &scene)
         {
             goon::GameObject gameobject{(entt::entity)entitySelected, &scene};
             ImGui::Text("GameObject %s", gameobject.GetComponent<goon::TagComponent>().Tag.c_str());
-            if (gameobject.HasComponent<goon::BgmComponent>())
+            bool hasbgm = gameobject.HasComponent<goon::BgmComponent>();
+            bool hasHierarchy = gameobject.HasComponent<goon::HierarchyComponent>();
+            bool hasId = gameobject.HasComponent<goon::IdComponent>();
+            if (hasbgm)
             {
                 if (ImGui::TreeNode((void *)(intptr_t)gameobject.GetID(), "Bgm Component "))
                 {
-                    auto &bgmComponent = gameobject.GetComponent<goon::BgmComponent>();
-                    ImGui::Text("Filename:");
-                    ImGui::SameLine();
-                    char buffer[256];
-                    memset(buffer, 0, sizeof(buffer));
-                    snprintf(buffer, sizeof(buffer), "%s", bgmComponent.SoundFile.c_str());
-                    if (ImGui::InputText("##Filename", buffer, sizeof(buffer)))
+                    // If we didn't remove the component with the popup.., this needs better
+                    if (!RemoveComponentPopup<goon::BgmComponent>(scene, (entt::entity)gameobject.GetID()))
                     {
+                        auto &bgmComponent = gameobject.GetComponent<goon::BgmComponent>();
+                        ImGui::Text("Filename:");
+                        ImGui::SameLine();
+                        char buffer[256];
+                        memset(buffer, 0, sizeof(buffer));
+                        snprintf(buffer, sizeof(buffer), "%s", bgmComponent.SoundFile.c_str());
+                        if (ImGui::InputText("##Filename", buffer, sizeof(buffer)))
+                        {
 
-                        bgmComponent.UpdateSoundFileName(std::string(buffer));
-                    }
-                    ImGui::Text("Begin Point (s):");
-                    ImGui::SameLine();
-                    if (ImGui::InputFloat("##Begin", &bgmComponent.LoopBegin))
-                    {
-                        bgmComponent.UpdateLoopBegin(bgmComponent.LoopBegin);
-                    }
-                    ImGui::Text("End Point (s):");
-                    ImGui::SameLine();
-                    if (ImGui::InputFloat("##End", &bgmComponent.LoopEnd))
-                    {
-                        bgmComponent.UpdateLoopEnd(bgmComponent.LoopEnd);
-                    }
-                    ImGui::Text("Volume");
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("##Volume", &bgmComponent.Volume, 0.0f, 1.0f);
-                    if (ImGui::Button("Play"))
-                    {
-                        SSPlayBgm(bgmComponent.LoadedBgm.get()->_bgm, bgmComponent.Volume);
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Pause"))
-                    {
-                        SSPauseBgm(bgmComponent.LoadedBgm.get()->_bgm);
+                            bgmComponent.UpdateSoundFileName(std::string(buffer));
+                        }
+                        ImGui::Text("Begin Point (s):");
+                        ImGui::SameLine();
+                        if (ImGui::InputFloat("##Begin", &bgmComponent.LoopBegin))
+                        {
+                            bgmComponent.UpdateLoopBegin(bgmComponent.LoopBegin);
+                        }
+                        ImGui::Text("End Point (s):");
+                        ImGui::SameLine();
+                        if (ImGui::InputFloat("##End", &bgmComponent.LoopEnd))
+                        {
+                            bgmComponent.UpdateLoopEnd(bgmComponent.LoopEnd);
+                        }
+                        ImGui::Text("Volume");
+                        ImGui::SameLine();
+                        ImGui::SliderFloat("##Volume", &bgmComponent.Volume, 0.0f, 1.0f);
+                        if (ImGui::Button("Play"))
+                        {
+                            SSPlayBgm(bgmComponent.LoadedBgm.get()->_bgm, bgmComponent.Volume);
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Pause"))
+                        {
+                            SSPauseBgm(bgmComponent.LoadedBgm.get()->_bgm);
+                        }
                     }
                     ImGui::TreePop();
                 }
             }
-            if (gameobject.HasComponent<goon::HierarchyComponent>())
+            if (hasHierarchy)
             {
                 auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::HierarchyComponent>();
                 if (ImGui::TreeNode(uniqueInt, "HierarchyComponent"))
@@ -228,7 +237,7 @@ int demo(goon::Scene &scene)
                     ImGui::TreePop();
                 }
             }
-            if (gameobject.HasComponent<goon::IdComponent>())
+            if (hasId)
             {
                 auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::IdComponent>();
                 if (ImGui::TreeNode(uniqueInt, "IdInfo"))
@@ -239,6 +248,19 @@ int demo(goon::Scene &scene)
                     ImGui::Text("Guid: %llu", guid);
                     ImGui::TreePop();
                 }
+            }
+            if (ImGui::Button("Add Component"))
+                ImGui::OpenPopup("AddComponent");
+            if (ImGui::BeginPopup("AddComponent"))
+            {
+                ImGui::Text("Component Name");
+                ImGui::Separator();
+                if (!hasbgm)
+                {
+                    if (ImGui::Selectable("Bgm"))
+                        gameobject.AddComponent<goon::BgmComponent, std::string, float, float, bool, float>("none", 0, 0, false, 0);
+                }
+                ImGui::EndPopup();
             }
         }
         ImGui::End();
@@ -333,6 +355,23 @@ static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked
         }
         ImGui::EndPopup();
     }
+}
+template <typename T>
+static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked)
+{
+    bool removedComponent = false;
+    if (ImGui::BeginPopupContextItem(nullptr)) // entityTag is used as a id for the popup
+    {
+        if (ImGui::Button("Remove Component"))
+        {
+            goon::GameObject go{entityRightClicked, &scene};
+            go.RemoveComponent<T>();
+            ImGui::CloseCurrentPopup();
+            removedComponent = true;
+        }
+        ImGui::EndPopup();
+    }
+    return removedComponent;
 }
 
 static void InitializeGameobjects()
