@@ -154,7 +154,15 @@ int demo(goon::Scene &scene)
         goon::GameObject rootGo{scene.RootObject, &scene};
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
         entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
-        // if (ImGui::TreeNode("RootObject"))
+
+        ImVec2 size = {10000,10};
+        ImGui::Dummy(size);
+        if(ImGui::IsItemHovered())
+        {
+            ImGui::Separator();
+
+        }
+
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
             CreateImGuiPopup(scene, rootGo);
