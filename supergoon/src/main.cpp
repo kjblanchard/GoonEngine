@@ -296,8 +296,33 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
     if (hierarchyComponent.FirstChild == entt::null)
     {
         ImGui::PushID(gameobject.GetGameobjectUniqueIntImgui());
+        // if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
         if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
+        {
             entitySelected = gameobject.GetID();
+        }
+        // Drag/Drop for selectable
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+        {
+            // Set payload to carry the index of our item (could be anything)
+            ImGui::SetDragDropPayload("DND_DEMO_CELL", &entity, sizeof(uint64_t));
+
+            // Display preview (could be anything, e.g. when dragging an image we could decide to display
+            // the filename and a small preview of the image, etc.)
+            ImGui::Text("Move %s", tagComponent.Tag.c_str());
+
+            ImGui::EndDragDropSource();
+        }
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+            {
+                IM_ASSERT(payload->DataSize == sizeof(uint64_t));
+                uint64_t payload_n = *(const uint64_t *)payload->Data;
+                gameobject.AddChildEntity((entt::entity)payload_n);
+            }
+            ImGui::EndDragDropTarget();
+        }
         ImGui::PopID();
         CreateImGuiPopup(scene, entity);
     }
