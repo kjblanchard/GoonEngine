@@ -21,6 +21,7 @@ int demo(goon::Scene &scene);
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
 static int entitySelected = -1;
+static void DragDropTarget();
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
 
@@ -154,14 +155,6 @@ int demo(goon::Scene &scene)
         goon::GameObject rootGo{scene.RootObject, &scene};
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
         entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
-
-        ImVec2 size = {10000,10};
-        ImGui::Dummy(size);
-        if(ImGui::IsItemHovered())
-        {
-            ImGui::Separator();
-
-        }
 
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
@@ -333,6 +326,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
         }
         ImGui::PopID();
         CreateImGuiPopup(scene, entity);
+        DragDropTarget();
     }
     else
     {
@@ -405,6 +399,27 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
         ImGui::EndPopup();
     }
     return removedComponent;
+}
+
+// This should be called before first child, and after every child except the last child.
+static void DragDropTarget()
+{
+    static ImVec2 hoverSeparatorSize = {200, 5};
+    bool dragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+    if (dragging)
+    {
+        ImGui::Dummy(hoverSeparatorSize);
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+            {
+                IM_ASSERT(payload->DataSize == sizeof(uint64_t));
+                uint64_t payload_n = *(const uint64_t *)payload->Data;
+                // Reorder-entity in parent.
+            }
+            ImGui::EndDragDropTarget();
+        }
+    }
 }
 
 static void InitializeGameobjects()

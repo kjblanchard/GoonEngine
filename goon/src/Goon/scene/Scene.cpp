@@ -48,6 +48,8 @@ namespace goon
         _registry.each([&](auto entityID)
                        {
                 goon::GameObject go { entityID , this };
+                if(!go.HasComponent<InactiveComponent>())
+                {
                 auto& tagComponent = go.GetComponent<goon::TagComponent>();
                 auto& idComponent = go.GetComponent<goon::IdComponent>();
                 uint64_t id = idComponent.Guid;
@@ -90,7 +92,9 @@ namespace goon
                     out << YAML::Value << GetGuidOfEntity(hierarchyComponent.Parent, *this);
                     out << YAML::EndMap;
                 }
-                out << YAML::EndSeq  << YAML::EndMap; });
+                out << YAML::EndSeq  << YAML::EndMap;
+
+                } });
         out << YAML::EndMap;
         out << YAML::EndMap;
         std::cout << out.c_str() << std::endl;
