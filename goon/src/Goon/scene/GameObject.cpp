@@ -13,7 +13,7 @@ namespace goon
     GameObject::~GameObject()
     {
     }
-    void GameObject::AddChildEntity(entt::entity child)
+    void GameObject::AppendChildEntity(entt::entity child)
     {
         auto childGameObject = GameObject{child, _scene};
         childGameObject.AddParentEntity(_entityId);

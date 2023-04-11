@@ -44,13 +44,15 @@ namespace goon
                 return;
             _scene->Registry().remove<T>(_entityId);
         }
+        void AddChildEntity(entt::entity child, entt::entity previousChild);
+        void RemoveChildEntity(entt::entity child);
 
         /**
          * @brief Adds a child entity to this gameobject, as well as makes this gameobject his parent.
          *
          * @param child The child to add to this gameobjects hierarchy component
          */
-        void AddChildEntity(entt::entity child);
+        void AppendChildEntity(entt::entity child);
 
     private:
         entt::entity _entityId;

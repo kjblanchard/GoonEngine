@@ -135,7 +135,7 @@ namespace goon
         if (parent != entt::null)
         {
             auto parentGo = GameObject(parent, this);
-            parentGo.AddChildEntity(guy);
+            parentGo.AppendChildEntity(guy);
         }
         return guy;
     }

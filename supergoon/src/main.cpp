@@ -21,7 +21,7 @@ int demo(goon::Scene &scene);
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
 static int entitySelected = -1;
-static void DragDropTarget();
+static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene& scene);
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
 
@@ -294,10 +294,10 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
     bool isInactive = gameobject.HasComponent<goon::InactiveComponent>();
     if (isInactive) // Try next child if we are inactive, this breaks out early.
         return hierarchyComponent.NextChild;
+    // If we have no children, draw a selectable
     if (hierarchyComponent.FirstChild == entt::null)
     {
         ImGui::PushID(gameobject.GetGameobjectUniqueIntImgui());
-        // if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
         if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
         {
             entitySelected = gameobject.GetID();
@@ -306,7 +306,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
         {
             // Set payload to carry the index of our item (could be anything)
-            ImGui::SetDragDropPayload("DND_DEMO_CELL", &entity, sizeof(uint64_t));
+            ImGui::SetDragDropPayload("test", &entity, sizeof(uint64_t));
 
             // Display preview (could be anything, e.g. when dragging an image we could decide to display
             // the filename and a small preview of the image, etc.)
@@ -316,18 +316,19 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
         }
         if (ImGui::BeginDragDropTarget())
         {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
             {
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
-                gameobject.AddChildEntity((entt::entity)payload_n);
+                gameobject.AppendChildEntity((entt::entity)payload_n);
             }
             ImGui::EndDragDropTarget();
         }
         ImGui::PopID();
         CreateImGuiPopup(scene, entity);
-        DragDropTarget();
+        DragDropTarget(entity, hierarchyComponent.Parent, scene);
     }
+    // If we do have children, then Create a drag/drop target after the tree is created.
     else
     {
         auto node_flags = base_flags;
@@ -337,10 +338,12 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
         }
         // bool node_open = ImGui::TreeNodeEx(gameobject.GetComponentUniqueIntImGui<goon::TagComponent>(), node_flags, tagComponent.Tag.c_str());
         bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
+        // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             entitySelected = gameobject.GetID();
 
         CreateImGuiPopup(scene, entity);
+        DragDropTarget(entt::null, entity, scene);
         if (node_open)
         {
             auto nextChild = hierarchyComponent.FirstChild;
@@ -402,24 +405,26 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
 }
 
 // This should be called before first child, and after every child except the last child.
-static void DragDropTarget()
+static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene& scene)
 {
     static ImVec2 hoverSeparatorSize = {200, 5};
     bool dragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
-    if (dragging)
-    {
-        ImGui::Dummy(hoverSeparatorSize);
+    ImVec2 size = (dragging) ?  hoverSeparatorSize : ImVec2(0,0);
+    // if (dragging)
+    // {
+        ImGui::Dummy(size);
         if (ImGui::BeginDragDropTarget())
         {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
             {
+                printf("This is %uld", previousChild);
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
-                // Reorder-entity in parent.
+                goon::GameObject gameobject {(entt::entity)payload_n, &scene };
             }
             ImGui::EndDragDropTarget();
         }
-    }
+    // }
 }
 
 static void InitializeGameobjects()
