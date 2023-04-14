@@ -21,9 +21,11 @@ int demo(goon::Scene &scene);
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
 static int entitySelected = -1;
-static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene& scene);
+static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene &scene);
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
+bool lastFrameDrag = false;
+bool thisFrameDrag = false;
 
 int main(int argc, char **argv)
 {
@@ -123,6 +125,8 @@ int demo(goon::Scene &scene)
         ImGui_ImplSDL2_NewFrame();
 
         ImGui::NewFrame();
+        lastFrameDrag = thisFrameDrag;
+        thisFrameDrag = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -405,26 +409,24 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
 }
 
 // This should be called before first child, and after every child except the last child.
-static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene& scene)
+static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene &scene)
 {
     static ImVec2 hoverSeparatorSize = {200, 5};
-    bool dragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
-    ImVec2 size = (dragging) ?  hoverSeparatorSize : ImVec2(0,0);
-    // if (dragging)
-    // {
-        ImGui::Dummy(size);
+    ImVec2 size = (thisFrameDrag || lastFrameDrag) ? hoverSeparatorSize : ImVec2(0, 0);
+    ImGui::Dummy(size);
+    if (thisFrameDrag || lastFrameDrag)
+    {
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
             {
-                printf("This is %uld", previousChild);
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
-                goon::GameObject gameobject {(entt::entity)payload_n, &scene };
+                goon::GameObject gameobject{(entt::entity)payload_n, &scene};
             }
             ImGui::EndDragDropTarget();
         }
-    // }
+    }
 }
 
 static void InitializeGameobjects()
