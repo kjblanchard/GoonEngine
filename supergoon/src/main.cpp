@@ -412,10 +412,10 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
 static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene &scene)
 {
     static ImVec2 hoverSeparatorSize = {200, 5};
-    ImVec2 size = (thisFrameDrag || lastFrameDrag) ? hoverSeparatorSize : ImVec2(0, 0);
-    ImGui::Dummy(size);
     if (thisFrameDrag || lastFrameDrag)
     {
+        ImVec2 size = (thisFrameDrag || lastFrameDrag) ? hoverSeparatorSize : ImVec2(0, 0);
+        ImGui::Dummy(size);
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
