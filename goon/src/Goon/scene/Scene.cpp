@@ -155,7 +155,6 @@ namespace goon
         {
             auto componentName = component["componentName"].as<std::string>();
             // Try and create all of the component types.
-            // BgmComponent(std::string soundFile, float loopBegin = 0.0f, float loopEnd = 0.0f, bool bg = false, float volume = 1.0f)
             if (componentName == "bgm")
             {
                 auto fileName = component["fileName"].as<std::string>();
@@ -164,15 +163,11 @@ namespace goon
                 auto ambient = component["ambientSound"].as<bool>();
                 auto volume = component["volume"].as<int>();
                 _registry.emplace<BgmComponent>(goEntity, fileName, loopBegin, loopEnd, ambient, volume);
-                // bgmComponent.
             }
             else if (componentName == "hierarchy")
             {
-                // If hierarchy.nextchild, nextchild = recursive
-                // _registry.emplace<HierarchyComponent>(goEntity);
                 auto firstChild = component["firstChild"].as<uint64_t>();
                 auto nextChild = component["nextChild"].as<uint64_t>();
-                // auto parent = component["parent"].as<uint64_t>();
                 auto &hierarchy = go.GetComponent<goon::HierarchyComponent>();
                 hierarchy.Parent = parent;
                 if (firstChild)
@@ -182,13 +177,11 @@ namespace goon
                 }
                 if (nextChild)
                 {
-                    hierarchy.NextChild = CreateGameObjectFromYaml(nextChild, goEntity, gameObjectNode);
+                    hierarchy.NextChild = CreateGameObjectFromYaml(nextChild, parent, gameObjectNode);
                 }
-                // If hierarchy.firstchild, firstchild = Recursive
             }
         }
         return goEntity;
-        // end
     }
 
     void Scene::DestroyGameObject(uint64_t entityId)
