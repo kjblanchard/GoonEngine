@@ -380,6 +380,21 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
 
             ImGui::EndDragDropSource();
         }
+        // Probably duplicated.
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
+            {
+                IM_ASSERT(payload->DataSize == sizeof(uint64_t));
+                uint64_t payload_n = *(const uint64_t *)payload->Data;
+                goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
+                auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
+                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+                oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
+                gameobject.AppendChildEntity((entt::entity)payload_n);
+            }
+            ImGui::EndDragDropTarget();
+        }
         // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             entitySelected = gameobject.GetID();
