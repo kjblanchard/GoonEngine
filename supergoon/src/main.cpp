@@ -163,7 +163,7 @@ int demo(goon::Scene &scene)
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
             CreateImGuiPopup(scene, rootGo);
-            DragDropTarget(entt::null, rootGo, scene );
+            DragDropTarget(entt::null, rootGo, scene);
 
             while (currentDrawingEntity != entt::null)
             {
@@ -352,7 +352,6 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
             entitySelected = gameobject.GetID();
 
         CreateImGuiPopup(scene, entity);
-        DragDropTarget(entt::null, entity, scene);
         if (node_open)
         {
             auto nextChild = hierarchyComponent.FirstChild;
@@ -362,6 +361,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
             }
             ImGui::TreePop();
         }
+        DragDropTarget(entity, hierarchyComponent.Parent, scene);
     }
     return hierarchyComponent.NextChild;
 }
