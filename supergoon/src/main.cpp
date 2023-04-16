@@ -168,6 +168,21 @@ int demo(goon::Scene &scene)
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
             CreateImGuiPopup(scene, rootGo);
+            // This is probably duplicated for everything that doesn't need a dummy (selectable, treenode, and probably should be a func.)
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
+                {
+                    IM_ASSERT(payload->DataSize == sizeof(uint64_t));
+                    uint64_t payload_n = *(const uint64_t *)payload->Data;
+                    goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
+                    auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
+                    auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+                    oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
+                    rootGo.AppendChildEntity((entt::entity)payload_n);
+                }
+                ImGui::EndDragDropTarget();
+            }
             DragDropTarget(entt::null, rootGo, parents, scene);
 
             while (currentDrawingEntity != entt::null)
@@ -372,10 +387,11 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
         CreateImGuiPopup(scene, entity);
         if (node_open)
         {
+            parents.push_back(gameobject.GetID());
+            DragDropTarget(entt::null, entity, parents, scene);
             auto nextChild = hierarchyComponent.FirstChild;
             while (nextChild != entt::null)
             {
-                parents.push_back(gameobject.GetID());
                 nextChild = RecursiveDraw(nextChild, scene, parents);
                 std::remove(parents.begin(), parents.end(), gameobject.GetID());
             }
