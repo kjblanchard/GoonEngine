@@ -19,9 +19,13 @@
 
 int demo(goon::Scene &scene);
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
-static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
+// static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
+// static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<entt::entity> &parents);
+static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents);
 static int entitySelected = -1;
-static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene &scene);
+// static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<entt::entity> &parents, goon::Scene &scene);
+// static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<entt::entity> &parents, bool is_tree, goon::Scene &scene);
+static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene);
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
 bool lastFrameDrag = false;
@@ -159,15 +163,17 @@ int demo(goon::Scene &scene)
         goon::GameObject rootGo{scene.RootObject, &scene};
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
         entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
+        std::vector<uint64_t> parents;
 
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
             CreateImGuiPopup(scene, rootGo);
-            DragDropTarget(entt::null, rootGo, scene);
+            DragDropTarget(entt::null, rootGo, parents, scene);
 
             while (currentDrawingEntity != entt::null)
             {
-                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene);
+                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, parents);
+                parents.clear();
             }
             ImGui::TreePop();
         }
@@ -290,7 +296,7 @@ int demo(goon::Scene &scene)
     return 0;
 }
 
-static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
+static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents)
 {
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
     goon::GameObject gameobject{entity, &scene};
@@ -335,7 +341,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
         }
         ImGui::PopID();
         CreateImGuiPopup(scene, entity);
-        DragDropTarget(entity, hierarchyComponent.Parent, scene);
+        DragDropTarget(entity, hierarchyComponent.Parent, parents, scene);
     }
     // If we do have children, then Create a drag/drop target after the tree is created.
     else
@@ -368,12 +374,13 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
             auto nextChild = hierarchyComponent.FirstChild;
             while (nextChild != entt::null)
             {
-                nextChild = RecursiveDraw(nextChild, scene);
+                parents.push_back(gameobject.GetID());
+                nextChild = RecursiveDraw(nextChild, scene, parents);
             }
             // Drag/Drop source for treenode
             ImGui::TreePop();
         }
-        DragDropTarget(entity, hierarchyComponent.Parent, scene);
+        DragDropTarget(entity, hierarchyComponent.Parent, parents, scene);
     }
     return hierarchyComponent.NextChild;
 }
@@ -430,7 +437,7 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
 }
 
 // This should be called before first child, and after every child except the last child.
-static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon::Scene &scene)
+static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene)
 {
     static ImVec2 hoverSeparatorSize = {200, 5};
     if (thisFrameDrag || lastFrameDrag)
@@ -449,10 +456,15 @@ static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon
                 auto &hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
                 if (previousChild != gameobject)
                 {
-                    auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
-                    oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
-                    auto newParentGameObject = goon::GameObject{parent, &scene};
-                    newParentGameObject.AddChildEntity((entt::entity)gameobject.GetID(), previousChild);
+                    // Check if this gameobject is not inside of it's parents, this will prevent treenodes from being dropped into each other.
+                    // is_tree and parents are needed for this, may be a better way?
+                    if (std::find(parents.begin(), parents.end(), gameobject.GetID()) == parents.end())
+                    {
+                        auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+                        oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
+                        auto newParentGameObject = goon::GameObject{parent, &scene};
+                        newParentGameObject.AddChildEntity((entt::entity)gameobject.GetID(), previousChild);
+                    }
                 }
             }
             ImGui::EndDragDropTarget();
