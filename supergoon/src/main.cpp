@@ -347,6 +347,17 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
         }
         // bool node_open = ImGui::TreeNodeEx(gameobject.GetComponentUniqueIntImGui<goon::TagComponent>(), node_flags, tagComponent.Tag.c_str());
         bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+        {
+            // Set payload to carry the index of our item (could be anything)
+            ImGui::SetDragDropPayload("test", &entity, sizeof(uint64_t));
+
+            // Display preview (could be anything, e.g. when dragging an image we could decide to display
+            // the filename and a small preview of the image, etc.)
+            ImGui::Text("Move %s", tagComponent.Tag.c_str());
+
+            ImGui::EndDragDropSource();
+        }
         // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             entitySelected = gameobject.GetID();
@@ -359,6 +370,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
             {
                 nextChild = RecursiveDraw(nextChild, scene);
             }
+            // Drag/Drop source for treenode
             ImGui::TreePop();
         }
         DragDropTarget(entity, hierarchyComponent.Parent, scene);
