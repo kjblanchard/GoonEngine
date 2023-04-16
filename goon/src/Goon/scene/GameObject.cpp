@@ -79,19 +79,29 @@ namespace goon
         // auto &newChildHierarchy = newChildGameObject.GetComponent<HierarchyComponent>();
         auto &parentHierarchy = this->GetComponent<HierarchyComponent>();
         auto nextIterChild = parentHierarchy.FirstChild;
-        while (nextIterChild != entt::null)
+        if (parentHierarchy.FirstChild == child)
         {
             auto nextChildGameObject = GameObject{nextIterChild, _scene};
             auto &nextChildHierarchy = nextChildGameObject.GetComponent<HierarchyComponent>();
-            if (nextChildHierarchy.NextChild == child)
+            parentHierarchy.FirstChild = nextChildHierarchy.NextChild;
+        }
+        else
+        {
+            while (nextIterChild != entt::null)
             {
-                auto nextNextChildGameObject = GameObject{nextChildHierarchy.NextChild, _scene};
-                auto &nextNextChildHierarchy = nextNextChildGameObject.GetComponent<HierarchyComponent>();
-                nextChildHierarchy.NextChild = nextNextChildHierarchy.NextChild;
-                _scene->DestroyGameObject((uint64_t)nextChildHierarchy.NextChild);
-                // remove child
+                auto nextChildGameObject = GameObject{nextIterChild, _scene};
+                auto &nextChildHierarchy = nextChildGameObject.GetComponent<HierarchyComponent>();
+                if (nextChildHierarchy.NextChild == child)
+                {
+                    auto nextNextChildGameObject = GameObject{nextChildHierarchy.NextChild, _scene};
+                    auto &nextNextChildHierarchy = nextNextChildGameObject.GetComponent<HierarchyComponent>();
+                    // Handle replacing first child if it is the first child.
+                    nextChildHierarchy.NextChild = nextNextChildHierarchy.NextChild;
+                    // _scene->DestroyGameObject((uint64_t)nextChildHierarchy.NextChild);
+                    // remove child
+                }
+                nextIterChild = nextChildHierarchy.NextChild;
             }
-            nextIterChild = nextChildHierarchy.NextChild;
         }
     }
 }

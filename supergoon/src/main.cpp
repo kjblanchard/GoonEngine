@@ -324,8 +324,8 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
             {
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
-               goon::GameObject targetGameobject{(entt::entity)payload_n, &scene};
-                auto& hierarchy = targetGameobject.GetComponent<goon::HierarchyComponent>();
+                goon::GameObject targetGameobject{(entt::entity)payload_n, &scene};
+                auto &hierarchy = targetGameobject.GetComponent<goon::HierarchyComponent>();
                 auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
                 oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
                 gameobject.AppendChildEntity((entt::entity)payload_n);
@@ -428,15 +428,19 @@ static void DragDropTarget(entt::entity previousChild, entt::entity parent, goon
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
             {
+                std::cout << "Parent is " << (uint64_t)parent << std::endl;
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
                 // Gameobject that was dropped here
                 goon::GameObject gameobject{(entt::entity)payload_n, &scene};
-                auto& hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
-                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
-                oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
-                auto newParentGameObject = goon::GameObject{parent, &scene};
-                newParentGameObject.AddChildEntity((entt::entity)gameobject.GetID(), previousChild);
+                auto &hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
+                if (previousChild != gameobject)
+                {
+                    auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+                    oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
+                    auto newParentGameObject = goon::GameObject{parent, &scene};
+                    newParentGameObject.AddChildEntity((entt::entity)gameobject.GetID(), previousChild);
+                }
             }
             ImGui::EndDragDropTarget();
         }
