@@ -173,6 +173,7 @@ int demo(goon::Scene &scene)
             while (currentDrawingEntity != entt::null)
             {
                 currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, parents);
+                // Clear parents, so that we don't track the parents down the next item.
                 parents.clear();
             }
             ImGui::TreePop();
@@ -376,6 +377,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
             {
                 parents.push_back(gameobject.GetID());
                 nextChild = RecursiveDraw(nextChild, scene, parents);
+                std::remove(parents.begin(), parents.end(), gameobject.GetID());
             }
             // Drag/Drop source for treenode
             ImGui::TreePop();
