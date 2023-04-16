@@ -325,10 +325,10 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene)
             {
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
-                goon::GameObject targetGameobject{(entt::entity)payload_n, &scene};
-                auto &hierarchy = targetGameobject.GetComponent<goon::HierarchyComponent>();
+                goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
+                auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
                 auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
-                oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
+                oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
                 gameobject.AppendChildEntity((entt::entity)payload_n);
             }
             ImGui::EndDragDropTarget();
