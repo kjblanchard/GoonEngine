@@ -163,6 +163,7 @@ int demo(goon::Scene &scene)
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
             CreateImGuiPopup(scene, rootGo);
+            DragDropTarget(entt::null, rootGo, scene );
 
             while (currentDrawingEntity != entt::null)
             {
