@@ -186,6 +186,7 @@ namespace goon
 
     void Scene::DestroyGameObject(uint64_t entityId)
     {
+        // Need to destroy all children in here.
         auto entity = (entt::entity)entityId;
         _registry.emplace<InactiveComponent>(entity);
     }
