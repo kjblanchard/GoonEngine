@@ -22,7 +22,8 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
 static void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene);
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
-static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene& scene);
+static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene &scene);
+static void DragDropSource(entt::entity entity, std::string& entityName);
 
 int demo(goon::Scene &scene);
 
@@ -326,40 +327,15 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
     bool isInactive = gameobject.HasComponent<goon::InactiveComponent>();
     if (isInactive) // Try next child if we are inactive, this breaks out early.
         return hierarchyComponent.NextChild;
-    // If we have no children, draw a selectable
-    if (hierarchyComponent.FirstChild == entt::null)
+    if (hierarchyComponent.FirstChild == entt::null) // If we have no children, we draw a selectable.
     {
         ImGui::PushID(gameobject.GetGameobjectUniqueIntImgui());
         if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
         {
             entitySelected = gameobject.GetID();
         }
-        // Drag/Drop for selectable
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-        {
-            // Set payload to carry the index of our item (could be anything)
-            ImGui::SetDragDropPayload("test", &entity, sizeof(uint64_t));
-
-            // Display preview (could be anything, e.g. when dragging an image we could decide to display
-            // the filename and a small preview of the image, etc.)
-            ImGui::Text("Move %s", tagComponent.Tag.c_str());
-
-            ImGui::EndDragDropSource();
-        }
-        if (ImGui::BeginDragDropTarget())
-        {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
-            {
-                IM_ASSERT(payload->DataSize == sizeof(uint64_t));
-                uint64_t payload_n = *(const uint64_t *)payload->Data;
-                goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
-                auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
-                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
-                oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
-                gameobject.AppendChildEntity((entt::entity)payload_n);
-            }
-            ImGui::EndDragDropTarget();
-        }
+        DragDropSource(entity, tagComponent.Tag);
+        DragDropTargetAppend(entity, scene);
         ImGui::PopID();
         CreateImGuiPopup(scene, entity);
         DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
@@ -374,17 +350,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
         }
         // bool node_open = ImGui::TreeNodeEx(gameobject.GetComponentUniqueIntImGui<goon::TagComponent>(), node_flags, tagComponent.Tag.c_str());
         bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-        {
-            // Set payload to carry the index of our item (could be anything)
-            ImGui::SetDragDropPayload("test", &entity, sizeof(uint64_t));
-
-            // Display preview (could be anything, e.g. when dragging an image we could decide to display
-            // the filename and a small preview of the image, etc.)
-            ImGui::Text("Move %s", tagComponent.Tag.c_str());
-
-            ImGui::EndDragDropSource();
-        }
+        DragDropSource(entity, tagComponent.Tag);
         // Probably duplicated.
         if (ImGui::BeginDragDropTarget())
         {
@@ -474,7 +440,23 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
     return removedComponent;
 }
 
-static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene& scene)
+static void DragDropSource(entt::entity entity, std::string& entityName)
+{
+
+    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+    {
+        // Set payload to carry the index of our item (could be anything)
+        ImGui::SetDragDropPayload("test", &entity, sizeof(uint64_t));
+
+        // Display preview (could be anything, e.g. when dragging an image we could decide to display
+        // the filename and a small preview of the image, etc.)
+        ImGui::Text("Move %s", entityName.c_str());
+
+        ImGui::EndDragDropSource();
+    }
+}
+
+static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene &scene)
 {
     if (ImGui::BeginDragDropTarget())
     {
@@ -491,7 +473,6 @@ static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene& scene)
         }
         ImGui::EndDragDropTarget();
     }
-
 }
 
 // This should be called before first child, and after every child except the last child.
