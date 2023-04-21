@@ -79,9 +79,16 @@ namespace goon
                 auto &nextChildHierarchy = nextChildGameObject.GetComponent<HierarchyComponent>();
                 if (nextIterChild == previousChild)
                 {
-                    // This is the "previous child, so must add in."
-                    newChildHierarchy.NextChild = nextChildHierarchy.NextChild;
-                    newChildHierarchy.PreviousChild == previousChild;
+                    // Get nextnext, so that we can update his stuff if he exists.
+                    auto nextNextChild = nextChildHierarchy.NextChild;
+                    if (nextNextChild != entt::null)
+                    {
+                        auto nextNextChildGameObject = GameObject{nextChildHierarchy.NextChild, _scene};
+                        auto &nextNextChildHierarchy = nextNextChildGameObject.GetComponent<HierarchyComponent>();
+                        nextNextChildHierarchy.PreviousChild = child;
+                    }
+                    newChildHierarchy.NextChild = nextNextChild;
+                    newChildHierarchy.PreviousChild = previousChild;
                     nextChildHierarchy.NextChild = child;
                     break;
                 }
@@ -112,10 +119,8 @@ namespace goon
                 {
                     auto nextNextChildGameObject = GameObject{nextChildHierarchy.NextChild, _scene};
                     auto &nextNextChildHierarchy = nextNextChildGameObject.GetComponent<HierarchyComponent>();
-                    // Handle replacing first child if it is the first child.
                     nextChildHierarchy.NextChild = nextNextChildHierarchy.NextChild;
-                    // _scene->DestroyGameObject((uint64_t)nextChildHierarchy.NextChild);
-                    // remove child
+                    nextNextChildHierarchy.PreviousChild = nextIterChild;
                 }
                 nextIterChild = nextChildHierarchy.NextChild;
             }
