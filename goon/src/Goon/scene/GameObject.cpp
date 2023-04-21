@@ -21,11 +21,12 @@ namespace goon
         auto &childHierarchy = _scene->Registry().get<HierarchyComponent>(child);
         if (parentHierarchyComponent.FirstChild == entt::null)
         {
-            childHierarchy.PreviousChild = childHierarchy.NextChild = entt::null;
-            parentHierarchyComponent.FirstChild = child;
+            // Add at beginning
+            AddChildEntity(child, entt::null);
         }
         else
         {
+            // Go to end, and then add it there.
             auto nextChild = parentHierarchyComponent.FirstChild;
             while (true)
             {
@@ -34,9 +35,7 @@ namespace goon
                     break;
                 nextChild = hierarchy.NextChild;
             }
-            auto &hierarchy = _scene->Registry().get<HierarchyComponent>(nextChild);
-            hierarchy.NextChild = child;
-            childHierarchy.PreviousChild = nextChild;
+            AddChildEntity(child, nextChild);
         }
         childHierarchy.NextChild = entt::null;
     }
@@ -67,6 +66,14 @@ namespace goon
         {
             newChildHierarchy.NextChild = parentHierarchy.FirstChild;
             newChildHierarchy.PreviousChild = entt::null;
+
+            // Handle if the parent already has a first child
+            if (parentHierarchy.FirstChild != entt::null)
+            {
+                auto nextChildGameObject = GameObject{parentHierarchy.FirstChild, _scene};
+                auto &nextChildHierarchy = nextChildGameObject.GetComponent<HierarchyComponent>();
+                nextChildHierarchy.PreviousChild = child;
+            }
             parentHierarchy.FirstChild = child;
             return;
         }
