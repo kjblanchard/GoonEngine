@@ -161,7 +161,7 @@ namespace goon
                 auto loopBegin = component["loopBegin"].as<float>();
                 auto loopEnd = component["loopEnd"].as<float>();
                 auto ambient = component["ambientSound"].as<bool>();
-                auto volume = component["volume"].as<int>();
+                auto volume = component["volume"].as<float>();
                 _registry.emplace<BgmComponent>(goEntity, fileName, loopBegin, loopEnd, ambient, volume);
             }
             else if (componentName == "hierarchy")
@@ -186,7 +186,7 @@ namespace goon
 
     void Scene::DestroyGameObject(uint64_t entityId)
     {
-        // Need to destroy all children in here.
+        // TODO: Need to destroy all children in here.
         auto entity = (entt::entity)entityId;
         _registry.emplace<InactiveComponent>(entity);
     }

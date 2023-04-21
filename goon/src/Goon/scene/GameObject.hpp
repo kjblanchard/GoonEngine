@@ -53,6 +53,8 @@ namespace goon
          * @param child The child to add to this gameobjects hierarchy component
          */
         void AppendChildEntity(entt::entity child);
+        void UpdatePreviousChild(uint64_t previousChild);
+        void UpdatePreviousChild(entt::entity previousChild);
 
     private:
         entt::entity _entityId;

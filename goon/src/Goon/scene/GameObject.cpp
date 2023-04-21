@@ -46,6 +46,16 @@ namespace goon
         auto &hierarchyComponent = _scene->Registry().get<HierarchyComponent>(_entityId);
         hierarchyComponent.Parent = parent;
     }
+    void GameObject::UpdatePreviousChild(uint64_t previousChild)
+    {
+        UpdatePreviousChild((entt::entity)previousChild);
+    }
+
+    void GameObject::UpdatePreviousChild(entt::entity previousChild)
+    {
+        auto &hierarchyComponent = _scene->Registry().get<HierarchyComponent>(_entityId);
+        hierarchyComponent.PreviousChild = previousChild;
+    }
 
     void GameObject::AddChildEntity(entt::entity child, entt::entity previousChild)
     {

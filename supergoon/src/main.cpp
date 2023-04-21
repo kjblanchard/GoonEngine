@@ -199,10 +199,31 @@ int demo(goon::Scene &scene)
         // Inspector Panel
         ////
         ImGui::Begin("Inspector");
+        static bool updatingName = false;
+        static char editNameBuffer[128];
         if (entitySelected != -1)
         {
             goon::GameObject gameobject{(entt::entity)entitySelected, &scene};
-            ImGui::Text("GameObject %s", gameobject.GetComponent<goon::TagComponent>().Tag.c_str());
+            auto name = gameobject.GetComponent<goon::TagComponent>().Tag.c_str();
+
+            ImGui::Text("Name: %s", name);
+            ImGui::SameLine();
+            if (ImGui::Button("Edit Name"))
+            {
+                updatingName = !updatingName;
+                snprintf(editNameBuffer, sizeof(editNameBuffer), "%s", name);
+            }
+            if (updatingName)
+            {
+                ImGui::InputText("Name", editNameBuffer, IM_ARRAYSIZE(editNameBuffer));
+                ImGui::SameLine();
+                if (ImGui::Button("Update"))
+                {
+                    gameobject.GetComponent<goon::TagComponent>().Tag = std::string(editNameBuffer);
+                    // gameobject.GetComponent<goon::TagComponent>().set_tag(std::string(str0));
+                    updatingName = !updatingName;
+                }
+            }
             bool hasbgm = gameobject.HasComponent<goon::BgmComponent>();
             bool hasHierarchy = gameobject.HasComponent<goon::HierarchyComponent>();
             bool hasId = gameobject.HasComponent<goon::IdComponent>();
@@ -300,7 +321,7 @@ int demo(goon::Scene &scene)
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
         // TODO reenable sound, or put into a system.
-        // UpdateSoundBro();
+        UpdateSoundBro();
     }
 
     ImGui_ImplSDLRenderer_Shutdown();
