@@ -17,17 +17,16 @@
 #include <Goon/scene/components/InactiveComponent.hpp>
 #include <Supergoon/commands/Action.hpp>
 
-int demo(goon::Scene &scene);
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
-// static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene);
-// static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<entt::entity> &parents);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents);
-static int entitySelected = -1;
-// static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<entt::entity> &parents, goon::Scene &scene);
-// static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<entt::entity> &parents, bool is_tree, goon::Scene &scene);
-static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene);
+static void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene);
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
+static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene& scene);
+
+int demo(goon::Scene &scene);
+
+static int entitySelected = -1;
 bool lastFrameDrag = false;
 bool thisFrameDrag = false;
 
@@ -35,7 +34,6 @@ int main(int argc, char **argv)
 {
     goon::Scene scene;
     scene.DeSerializeScene();
-    // scene.SerializeScene();
     demo(scene);
 }
 
@@ -160,6 +158,7 @@ int demo(goon::Scene &scene)
         ////
         ImGui::Begin("Hierarchy");
 
+        // Draw root, and then all others
         goon::GameObject rootGo{scene.RootObject, &scene};
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
         entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
@@ -168,27 +167,12 @@ int demo(goon::Scene &scene)
         if (ImGui::TreeNode(scene.SceneName().c_str()))
         {
             CreateImGuiPopup(scene, rootGo);
-            // This is probably duplicated for everything that doesn't need a dummy (selectable, treenode, and probably should be a func.)
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
-                {
-                    IM_ASSERT(payload->DataSize == sizeof(uint64_t));
-                    uint64_t payload_n = *(const uint64_t *)payload->Data;
-                    goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
-                    auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
-                    auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
-                    oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
-                    rootGo.AppendChildEntity((entt::entity)payload_n);
-                }
-                ImGui::EndDragDropTarget();
-            }
-            DragDropTarget(entt::null, rootGo, parents, scene);
+            DragDropTargetAppend(scene.RootObject, scene);
+            DragDropTargetBetween(entt::null, rootGo, parents, scene);
 
             while (currentDrawingEntity != entt::null)
             {
                 currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, parents);
-                // Clear parents, so that we don't track the parents down the next item.
                 parents.clear();
             }
             ImGui::TreePop();
@@ -378,7 +362,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
         }
         ImGui::PopID();
         CreateImGuiPopup(scene, entity);
-        DragDropTarget(entity, hierarchyComponent.Parent, parents, scene);
+        DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
     }
     // If we do have children, then Create a drag/drop target after the tree is created.
     else
@@ -424,7 +408,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
         if (node_open)
         {
             parents.push_back(gameobject.GetID());
-            DragDropTarget(entt::null, entity, parents, scene);
+            DragDropTargetBetween(entt::null, entity, parents, scene);
             auto nextChild = hierarchyComponent.FirstChild;
             while (nextChild != entt::null)
             {
@@ -434,7 +418,7 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
             // Drag/Drop source for treenode
             ImGui::TreePop();
         }
-        DragDropTarget(entity, hierarchyComponent.Parent, parents, scene);
+        DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
     }
     return hierarchyComponent.NextChild;
 }
@@ -490,8 +474,28 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
     return removedComponent;
 }
 
+static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene& scene)
+{
+    if (ImGui::BeginDragDropTarget())
+    {
+        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
+        {
+            auto appendGO = goon::GameObject{appendEntity, &scene};
+            IM_ASSERT(payload->DataSize == sizeof(uint64_t));
+            uint64_t payload_n = *(const uint64_t *)payload->Data;
+            goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
+            auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
+            auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+            oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
+            appendGO.AppendChildEntity((entt::entity)payload_n);
+        }
+        ImGui::EndDragDropTarget();
+    }
+
+}
+
 // This should be called before first child, and after every child except the last child.
-static void DragDropTarget(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene)
+static void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene)
 {
     static ImVec2 hoverSeparatorSize = {200, 5};
     if (thisFrameDrag || lastFrameDrag)
@@ -524,56 +528,4 @@ static void DragDropTarget(entt::entity previousChild, entt::entity parent, std:
             ImGui::EndDragDropTarget();
         }
     }
-}
-
-static void InitializeGameobjects()
-{
-    // std::string name = "RootObject";
-    // auto rootObject = scene.CreateGameObject(name);
-    // // printf("Root object id is %lld", rootObject.GetID());
-    // scene.RootObject = rootObject;
-
-    // for (size_t i = 0; i < 5; i++)
-    // {
-    //     name = "SmartCookie" + std::to_string(i);
-    //     auto boi = scene.CreateGameObject(name);
-    //     rootObject.AddChildEntity(boi);
-    // }
-    // name = "Nest";
-    // auto boi = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi);
-    // name = "Nest1";
-    // auto boi1 = scene.CreateGameObject(name);
-    // boi.AddChildEntity(boi1);
-    // name = "Nest2";
-    // auto boi2 = scene.CreateGameObject(name);
-    // boi1.AddChildEntity(boi2);
-
-    // name = "Nest3";
-    // auto boi3 = scene.CreateGameObject(name);
-    // boi1.AddChildEntity(boi3);
-
-    // name = "Nest4";
-    // auto boi4 = scene.CreateGameObject(name);
-    // boi1.AddChildEntity(boi4);
-
-    // name = "NoParent";
-    // auto boi5 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi5);
-    // name = "Nest";
-    // auto boi6 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi6);
-    // name = "Nest1";
-    // auto boi7 = scene.CreateGameObject(name);
-    // boi6.AddChildEntity(boi7);
-
-    // name = "No u bro";
-    // auto boi2 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi2);
-    // boi.AddChildEntity(boi2);
-    // name = "No sound";
-    // auto boi3 = scene.CreateGameObject(name);
-    // rootObject.AddChildEntity(boi3);
-    // boi.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/menu1.ogg", 0, 3333, false);
-    // boi2.AddComponent<goon::BgmComponent, std::string, float, float, bool>("./assets/rain.ogg", 0, 10, true);
 }
