@@ -1,6 +1,10 @@
 #pragma once
 #include <SDL_events.h>
 #include <entt/fwd.hpp>
+namespace ImGui
+{
+    class ImVec2;
+}
 
 namespace goon
 {
@@ -15,16 +19,13 @@ namespace goon
         void DrawImGuiFrame();
         void ExitImGui();
         void LoadScene(Scene &scene) { _scene = &scene; }
-        // Statics moved here
         entt::entity RecursiveDraw(entt::entity entity, std::vector<uint64_t> &parents);
         void CreateImGuiPopup(entt::entity entityRightClicked);
         template <typename T>
         bool RemoveComponentPopup(entt::entity entityRightClicked);
         void DragDropSource(entt::entity entity, std::string &entityName);
-        void DragDropTargetAppend(entt::entity appendEntity);
+        void DragDropTargetAppend(entt::entity appendEntity, std::vector<uint64_t>& parents);
         void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents);
-        // End statics
-
         entt::entity entitySelected = entt::null;
         bool lastFrameDrag = false;
         bool thisFrameDrag = false;

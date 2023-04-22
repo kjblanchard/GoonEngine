@@ -244,7 +244,7 @@ namespace goon
         if (ImGui::TreeNode(_scene->SceneName().c_str()))
         {
             CreateImGuiPopup(rootGo);
-            DragDropTargetAppend(_scene->RootObject);
+            DragDropTargetAppend(_scene->RootObject, parents);
             DragDropTargetBetween(entt::null, rootGo, parents);
 
             while (currentDrawingEntity != entt::null)
@@ -286,7 +286,7 @@ namespace goon
                 entitySelected = gameobject.GetEntity();
             }
             DragDropSource(entity, tagComponent.Tag);
-            DragDropTargetAppend(entity);
+            DragDropTargetAppend(entity, parents);
             ImGui::PopID();
             CreateImGuiPopup(entity);
             DragDropTargetBetween(entity, hierarchyComponent.Parent, parents);
@@ -300,7 +300,7 @@ namespace goon
             }
             bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
             DragDropSource(entity, tagComponent.Tag);
-            DragDropTargetAppend(entity);
+            DragDropTargetAppend(entity, parents);
             // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 entitySelected = gameobject.GetEntity();
@@ -386,8 +386,7 @@ namespace goon
         }
     }
 
-    // Should get rid of this function, and merge with the between, as that one checks the parents so is safer.
-    void EditorLayer::DragDropTargetAppend(entt::entity appendEntity)
+    void EditorLayer::DragDropTargetAppend(entt::entity appendEntity, std::vector<uint64_t> &parents)
     {
         if (ImGui::BeginDragDropTarget())
         {
@@ -395,50 +394,45 @@ namespace goon
             {
                 auto appendGO = goon::GameObject{appendEntity, _scene};
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
-                uint64_t payload_n = *(const uint64_t *)payload->Data;
-                goon::GameObject sourceGameObject{(entt::entity)payload_n, _scene};
-                auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
-                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, _scene};
-                oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
-                appendGO.AppendChildEntity((entt::entity)payload_n);
+                uint64_t droppedEntityId = *(const uint64_t *)payload->Data;
+                goon::GameObject droppedGameObject{(entt::entity)droppedEntityId, _scene};
+                if (std::find(parents.begin(), parents.end(), droppedGameObject.GetID()) == parents.end())
+                {
+                    auto &hierarchy = droppedGameObject.GetComponent<goon::HierarchyComponent>();
+                    auto oldParentGameObject = goon::GameObject{hierarchy.Parent, _scene};
+                    oldParentGameObject.RemoveChildEntity((entt::entity)droppedGameObject);
+                    appendGO.AppendChildEntity((entt::entity)droppedEntityId);
+                }
             }
             ImGui::EndDragDropTarget();
         }
     }
 
-    // This should be called before first child, and after every child except the last child.
     void EditorLayer::DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents)
     {
-        static ImVec2 hoverSeparatorSize = {200, 5};
-        if (thisFrameDrag || lastFrameDrag)
+        if (!(thisFrameDrag || lastFrameDrag))
+            return;
+        ImGui::Dummy(ImVec2{200, 5});
+        if (ImGui::BeginDragDropTarget())
         {
-            ImVec2 size = (thisFrameDrag || lastFrameDrag) ? hoverSeparatorSize : ImVec2(0, 0);
-            ImGui::Dummy(size);
-            if (ImGui::BeginDragDropTarget())
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
             {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
+                IM_ASSERT(payload->DataSize == sizeof(uint64_t));
+                uint64_t droppedEntityId = *(const uint64_t *)payload->Data;
+                goon::GameObject droppedGameObject{(entt::entity)droppedEntityId, _scene};
+                if (previousChild != droppedGameObject)
                 {
-                    std::cout << "Parent is " << (uint64_t)parent << std::endl;
-                    IM_ASSERT(payload->DataSize == sizeof(uint64_t));
-                    uint64_t payload_n = *(const uint64_t *)payload->Data;
-                    // Gameobject that was dropped here
-                    goon::GameObject gameobject{(entt::entity)payload_n, _scene};
-                    auto &hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
-                    if (previousChild != gameobject)
+                    if (std::find(parents.begin(), parents.end(), droppedGameObject.GetID()) == parents.end())
                     {
-                        // Check if this gameobject is not inside of it's parents, this will prevent treenodes from being dropped into each other.
-                        // is_tree and parents are needed for this, may be a better way?
-                        if (std::find(parents.begin(), parents.end(), gameobject.GetID()) == parents.end())
-                        {
-                            auto oldParentGameObject = goon::GameObject{hierarchy.Parent, _scene};
-                            oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
-                            auto newParentGameObject = goon::GameObject{parent, _scene};
-                            newParentGameObject.AddChildEntity((entt::entity)gameobject.GetID(), previousChild);
-                        }
+                        auto &hierarchy = droppedGameObject.GetComponent<goon::HierarchyComponent>();
+                        auto oldParentGameObject = goon::GameObject{hierarchy.Parent, _scene};
+                        oldParentGameObject.RemoveChildEntity((entt::entity)droppedGameObject);
+                        auto newParentGameObject = goon::GameObject{parent, _scene};
+                        newParentGameObject.AddChildEntity((entt::entity)droppedGameObject.GetID(), previousChild);
                     }
                 }
-                ImGui::EndDragDropTarget();
             }
+            ImGui::EndDragDropTarget();
         }
     }
 
