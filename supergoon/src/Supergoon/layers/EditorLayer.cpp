@@ -1,12 +1,11 @@
-#include <Supergoon/layers/EditorLayer.hpp>
-#include <Goon/core/Application.hpp>
+#include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
-#include <imgui.h>
 #include <Goon/scene/Scene.hpp>
 #include <entt/entity/entity.hpp>
 #include <Goon/scene/GameObject.hpp>
 #include <Goon/scene/Scene.hpp>
+#include <Goon/core/Application.hpp>
 #include <Goon/scene/GameObject.hpp>
 #include <Goon/core/bgm_asset.hpp>
 #include <Goon/systems/SoundSystem.hpp>
@@ -17,6 +16,7 @@
 #include <Goon/scene/components/IdComponent.hpp>
 #include <Goon/scene/components/InactiveComponent.hpp>
 #include <Supergoon/commands/Action.hpp>
+#include <Supergoon/layers/EditorLayer.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
 
 namespace goon
@@ -30,16 +30,13 @@ namespace goon
         ImGuiIO &io = ImGui::GetIO();
         (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
         // Setup Dear ImGui style
         // ImGui::StyleColorsDark();
         ImGui::StyleColorsLight();
         auto application = Application::GetApplication();
-
         // Setup Platform/Renderer backends
         ImGui_ImplSDL2_InitForSDLRenderer(application->GetWindow(), application->GetRenderer());
         ImGui_ImplSDLRenderer_Init(application->GetRenderer());
-
         // Load Fonts
         // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
         // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
@@ -55,7 +52,6 @@ namespace goon
         // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
         // ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
         // IM_ASSERT(font != NULL);
-        bool show_demo_window = true;
     }
 
     void EditorLayer::ProcessImGuiEvents(SDL_Event *event)
@@ -94,37 +90,8 @@ namespace goon
         if (showDemoWindow)
             ImGui::ShowDemoWindow(&showDemoWindow);
 
-        ////
-        // Hierarchy Panel
-        ////
-        ImGui::Begin("Hierarchy");
-        // Handle dragging bool
-        lastFrameDrag = thisFrameDrag;
-        if (ImGui::IsWindowFocused() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-            thisFrameDrag = true;
-        else
-            thisFrameDrag = false;
+        DrawHierarchy();
 
-        // Draw root, and then all others
-        goon::GameObject rootGo{scene.RootObject, &scene};
-        auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
-        entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
-        std::vector<uint64_t> parents;
-
-        if (ImGui::TreeNode(scene.SceneName().c_str()))
-        {
-            CreateImGuiPopup(scene, rootGo);
-            DragDropTargetAppend(scene.RootObject, scene);
-            DragDropTargetBetween(entt::null, rootGo, parents, scene);
-
-            while (currentDrawingEntity != entt::null)
-            {
-                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, scene, parents);
-                parents.clear();
-            }
-            ImGui::TreePop();
-        }
-        ImGui::End();
 
         ////
         // Inspector Panel
@@ -246,6 +213,41 @@ namespace goon
         ImGui::End();
 
         ImGui::Render();
+    }
+    void EditorLayer::DrawHierarchy()
+    {
+        ////
+        // Hierarchy Panel
+        ////
+        ImGui::Begin("Hierarchy");
+        // Handle dragging bool
+        lastFrameDrag = thisFrameDrag;
+        if (ImGui::IsWindowFocused() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+            thisFrameDrag = true;
+        else
+            thisFrameDrag = false;
+
+        // Draw root, and then all others
+        goon::GameObject rootGo{_scene->RootObject, _scene};
+        auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
+        entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
+        std::vector<uint64_t> parents;
+
+        if (ImGui::TreeNode(_scene->SceneName().c_str()))
+        {
+            CreateImGuiPopup(*_scene, rootGo);
+            DragDropTargetAppend(_scene->RootObject, *_scene);
+            DragDropTargetBetween(entt::null, rootGo, parents, *_scene);
+
+            while (currentDrawingEntity != entt::null)
+            {
+                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, *_scene, parents);
+                parents.clear();
+            }
+            ImGui::TreePop();
+        }
+        ImGui::End();
+
     }
 
     void EditorLayer::DrawImGuiFrame()

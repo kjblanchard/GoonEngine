@@ -16,6 +16,7 @@ int demo(goon::Scene &scene)
     application.InitializeSDL();
     auto editor = goon::EditorLayer();
     editor.InitializeImGui();
+    editor.LoadScene(scene);
     bool done = false;
     while (!done)
     {

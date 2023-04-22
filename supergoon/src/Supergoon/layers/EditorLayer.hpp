@@ -14,6 +14,7 @@ namespace goon
         void ProcessImGuiFrame(Scene &scene);
         void DrawImGuiFrame();
         void ExitImGui();
+        void LoadScene(Scene& scene) { _scene = &scene; }
         // Statics moved here
         entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents);
         void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
@@ -27,5 +28,9 @@ namespace goon
         bool lastFrameDrag = false;
         bool thisFrameDrag = false;
         bool showDemoWindow = true;
+
+    private:
+        void DrawHierarchy();
+        Scene* _scene;
     };
 }
