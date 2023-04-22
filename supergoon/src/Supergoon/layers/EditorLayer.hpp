@@ -23,14 +23,18 @@ namespace goon
         void DragDropSource(entt::entity entity, std::string &entityName);
         void DragDropTargetAppend(entt::entity appendEntity);
         void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents);
+        // End statics
 
-        int entitySelected = -1;
+        entt::entity entitySelected = entt::null;
         bool lastFrameDrag = false;
         bool thisFrameDrag = false;
         bool showDemoWindow = true;
 
     private:
+        void DrawMainMenu();
+        void DrawDebugWindow();
         void DrawHierarchy();
+        void DrawInspector();
         Scene *_scene;
     };
 }

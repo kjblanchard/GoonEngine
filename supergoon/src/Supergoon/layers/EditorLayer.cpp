@@ -67,13 +67,22 @@ namespace goon
 
     void EditorLayer::ProcessImGuiFrame(Scene &scene)
     {
+        DrawMainMenu();
+        DrawDebugWindow();
+        DrawHierarchy();
+        DrawInspector();
+        ImGui::Render();
+    }
+
+    void EditorLayer::DrawMainMenu()
+    {
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
             {
                 if (ImGui::MenuItem("Save", "ctrl + s"))
                 {
-                    scene.SerializeScene();
+                    _scene->SerializeScene();
                 }
                 ImGui::Text("Load");
                 ImGui::EndMenu();
@@ -86,21 +95,23 @@ namespace goon
             }
             ImGui::EndMainMenuBar();
         }
-
+    }
+    void EditorLayer::DrawDebugWindow()
+    {
         if (showDemoWindow)
             ImGui::ShowDemoWindow(&showDemoWindow);
-
-        DrawHierarchy();
-
+    }
+    void EditorLayer::DrawInspector()
+    {
         ////
         // Inspector Panel
         ////
         ImGui::Begin("Inspector");
         static bool updatingName = false;
         static char editNameBuffer[128];
-        if (entitySelected != -1)
+        if (entitySelected != entt::null)
         {
-            goon::GameObject gameobject{(entt::entity)entitySelected, &scene};
+            goon::GameObject gameobject{(entt::entity)entitySelected, _scene};
             auto name = gameobject.GetComponent<goon::TagComponent>().Tag.c_str();
 
             ImGui::Text("Name: %s", name);
@@ -210,8 +221,6 @@ namespace goon
             }
         }
         ImGui::End();
-
-        ImGui::Render();
     }
     void EditorLayer::DrawHierarchy()
     {
@@ -272,9 +281,9 @@ namespace goon
         if (hierarchyComponent.FirstChild == entt::null) // If we have no children, we draw a selectable.
         {
             ImGui::PushID(gameobject.GetGameobjectUniqueIntImgui());
-            if (ImGui::Selectable(tagComponent, gameobject.GetID() == entitySelected))
+            if (ImGui::Selectable(tagComponent, gameobject.GetEntity() == entitySelected))
             {
-                entitySelected = gameobject.GetID();
+                entitySelected = gameobject.GetEntity();
             }
             DragDropSource(entity, tagComponent.Tag);
             DragDropTargetAppend(entity);
@@ -285,7 +294,7 @@ namespace goon
         else // If we do have children, then Create a drag/drop target after the tree is created.
         {
             auto node_flags = base_flags;
-            if (entitySelected == gameobject.GetID())
+            if (entitySelected == gameobject.GetEntity())
             {
                 node_flags |= 1 << 0;
             }
@@ -294,7 +303,7 @@ namespace goon
             DragDropTargetAppend(entity);
             // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-                entitySelected = gameobject.GetID();
+                entitySelected = gameobject.GetEntity();
 
             CreateImGuiPopup(entity);
             if (node_open)
@@ -314,12 +323,11 @@ namespace goon
         return hierarchyComponent.NextChild;
     }
 
-    // TODO we need to change this from int to uint64_t
     void EditorLayer::CreateImGuiPopup(entt::entity entityRightClicked)
     {
         if (ImGui::BeginPopupContextItem(nullptr)) // entityTag is used as a id for the popup
         {
-            entitySelected = (uint64_t)entityRightClicked;
+            entitySelected = entityRightClicked;
             std::string name = "Unnamed";
 
             if (ImGui::Button("Create Gameobject at root"))
@@ -340,7 +348,7 @@ namespace goon
                     auto hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
                     auto parentGameobject = goon::GameObject{hierarchy.Parent, _scene};
                     parentGameobject.RemoveChildEntity(entityRightClicked);
-                    _scene->DestroyGameObject(entitySelected);
+                    _scene->DestroyGameObject((uint64_t)entitySelected);
                     ImGui::CloseCurrentPopup();
                 }
             }
