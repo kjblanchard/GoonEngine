@@ -1,8 +1,8 @@
 #include <iostream>
 #include <memory>
-#include <SDL.h>
-#include <imgui.h>
 #include <cstring>
+#include <imgui.h>
+#include <Goon/core/Application.hpp>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <Goon/scene/Scene.hpp>
@@ -23,7 +23,7 @@ static void DragDropTargetBetween(entt::entity previousChild, entt::entity paren
 template <typename T>
 static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
 static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene &scene);
-static void DragDropSource(entt::entity entity, std::string& entityName);
+static void DragDropSource(entt::entity entity, std::string &entityName);
 
 int demo(goon::Scene &scene);
 
@@ -40,26 +40,10 @@ int main(int argc, char **argv)
 
 int demo(goon::Scene &scene)
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
-    {
-        printf("Error: %s\n", SDL_GetError());
-        return -1;
-    }
+    auto application = goon::Application();
+    application.InitializeSDL();
 
-    // Setup window
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    SDL_Window *window = SDL_CreateWindow("Supergoon Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-
-    // Setup SDL_Renderer instance
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL)
-    {
-        SDL_Log("Error creating SDL_Renderer!");
-        return 0;
-    }
-    SDL_RendererInfo info;
-    SDL_GetRendererInfo(renderer, &info);
-    SDL_Log("Current SDL_Renderer: %s", info.name);
+    // IMGUI setup
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -73,8 +57,8 @@ int demo(goon::Scene &scene)
     ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer_Init(renderer);
+    ImGui_ImplSDL2_InitForSDLRenderer(application.GetWindow(), application.GetRenderer());
+    ImGui_ImplSDLRenderer_Init(application.GetRenderer());
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -108,28 +92,16 @@ int demo(goon::Scene &scene)
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
                 done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(application.GetWindow()))
                 done = true;
         }
 
+        application.ResizeWindow();
 // Start the Dear ImGui frame
-// If Apple, make sure that the screen is the correct size on highdpi
-#ifdef GN_PLATFORM_MACOS
-        int width, height, rwidth, rheight;
-        float scalex, scaley;
-        SDL_GetWindowSize(window, &width, &height);
-        SDL_GetRendererOutputSize(renderer, &rwidth, &rheight);
-        scalex = rwidth / width;
-        scaley = rheight / height;
-        SDL_RenderSetScale(renderer, scalex, scaley);
-#endif
-
         ImGui_ImplSDLRenderer_NewFrame();
         ImGui_ImplSDL2_NewFrame();
 
         ImGui::NewFrame();
-        lastFrameDrag = thisFrameDrag;
-        thisFrameDrag = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -158,6 +130,12 @@ int demo(goon::Scene &scene)
         // Hierarchy Panel
         ////
         ImGui::Begin("Hierarchy");
+        // Handle dragging bool
+        lastFrameDrag = thisFrameDrag;
+        if (ImGui::IsWindowFocused() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+            thisFrameDrag = true;
+        else
+            thisFrameDrag = false;
 
         // Draw root, and then all others
         goon::GameObject rootGo{scene.RootObject, &scene};
@@ -299,22 +277,20 @@ int demo(goon::Scene &scene)
         }
         ImGui::End();
 
-        // TODO - move this to our own renderer.
         ImGui::Render();
-        SDL_SetRenderDrawColor(renderer, (Uint8)(255), (Uint8)(255), (Uint8)(255), (Uint8)(255));
-        SDL_RenderClear(renderer);
+        application.StartDrawFrame();
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-        SDL_RenderPresent(renderer);
+        application.EndDrawFrame();
         // TODO reenable sound, or put into a system.
-        UpdateSoundBro();
+        // UpdateSoundBro();
     }
 
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    application.DestroyWindow();
+    application.ExitSdl();
+
     return 0;
 }
 
@@ -340,32 +316,16 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
         CreateImGuiPopup(scene, entity);
         DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
     }
-    // If we do have children, then Create a drag/drop target after the tree is created.
-    else
+    else // If we do have children, then Create a drag/drop target after the tree is created.
     {
         auto node_flags = base_flags;
         if (entitySelected == gameobject.GetID())
         {
             node_flags |= 1 << 0;
         }
-        // bool node_open = ImGui::TreeNodeEx(gameobject.GetComponentUniqueIntImGui<goon::TagComponent>(), node_flags, tagComponent.Tag.c_str());
         bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
         DragDropSource(entity, tagComponent.Tag);
-        // Probably duplicated.
-        if (ImGui::BeginDragDropTarget())
-        {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
-            {
-                IM_ASSERT(payload->DataSize == sizeof(uint64_t));
-                uint64_t payload_n = *(const uint64_t *)payload->Data;
-                goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
-                auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
-                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
-                oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
-                gameobject.AppendChildEntity((entt::entity)payload_n);
-            }
-            ImGui::EndDragDropTarget();
-        }
+        DragDropTargetAppend(entity, scene);
         // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             entitySelected = gameobject.GetID();
@@ -381,7 +341,6 @@ static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::
                 nextChild = RecursiveDraw(nextChild, scene, parents);
                 std::remove(parents.begin(), parents.end(), gameobject.GetID());
             }
-            // Drag/Drop source for treenode
             ImGui::TreePop();
         }
         DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
@@ -440,22 +399,20 @@ static bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightCli
     return removedComponent;
 }
 
-static void DragDropSource(entt::entity entity, std::string& entityName)
+static void DragDropSource(entt::entity entity, std::string &entityName)
 {
-
     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
     {
         // Set payload to carry the index of our item (could be anything)
         ImGui::SetDragDropPayload("test", &entity, sizeof(uint64_t));
-
         // Display preview (could be anything, e.g. when dragging an image we could decide to display
         // the filename and a small preview of the image, etc.)
         ImGui::Text("Move %s", entityName.c_str());
-
         ImGui::EndDragDropSource();
     }
 }
 
+// Should get rid of this function, and merge with the between, as that one checks the parents so is safer.
 static void DragDropTargetAppend(entt::entity appendEntity, goon::Scene &scene)
 {
     if (ImGui::BeginDragDropTarget())
