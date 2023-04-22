@@ -14,15 +14,15 @@ namespace goon
         void ProcessImGuiFrame(Scene &scene);
         void DrawImGuiFrame();
         void ExitImGui();
-        void LoadScene(Scene& scene) { _scene = &scene; }
+        void LoadScene(Scene &scene) { _scene = &scene; }
         // Statics moved here
-        entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents);
-        void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
+        entt::entity RecursiveDraw(entt::entity entity, std::vector<uint64_t> &parents);
+        void CreateImGuiPopup(entt::entity entityRightClicked);
         template <typename T>
-        bool RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked);
+        bool RemoveComponentPopup(entt::entity entityRightClicked);
         void DragDropSource(entt::entity entity, std::string &entityName);
-        void DragDropTargetAppend(entt::entity appendEntity, goon::Scene &scene);
-        void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene);
+        void DragDropTargetAppend(entt::entity appendEntity);
+        void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents);
 
         int entitySelected = -1;
         bool lastFrameDrag = false;
@@ -31,6 +31,6 @@ namespace goon
 
     private:
         void DrawHierarchy();
-        Scene* _scene;
+        Scene *_scene;
     };
 }

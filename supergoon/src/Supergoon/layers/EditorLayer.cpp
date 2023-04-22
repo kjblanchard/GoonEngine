@@ -92,7 +92,6 @@ namespace goon
 
         DrawHierarchy();
 
-
         ////
         // Inspector Panel
         ////
@@ -130,7 +129,7 @@ namespace goon
                 if (ImGui::TreeNode((void *)(intptr_t)gameobject.GetID(), "Bgm Component "))
                 {
                     // If we didn't remove the component with the popup.., this needs better
-                    if (!RemoveComponentPopup<goon::BgmComponent>(scene, (entt::entity)gameobject.GetID()))
+                    if (!RemoveComponentPopup<goon::BgmComponent>((entt::entity)gameobject.GetID()))
                     {
                         auto &bgmComponent = gameobject.GetComponent<goon::BgmComponent>();
                         ImGui::Text("Filename:");
@@ -235,19 +234,18 @@ namespace goon
 
         if (ImGui::TreeNode(_scene->SceneName().c_str()))
         {
-            CreateImGuiPopup(*_scene, rootGo);
-            DragDropTargetAppend(_scene->RootObject, *_scene);
-            DragDropTargetBetween(entt::null, rootGo, parents, *_scene);
+            CreateImGuiPopup(rootGo);
+            DragDropTargetAppend(_scene->RootObject);
+            DragDropTargetBetween(entt::null, rootGo, parents);
 
             while (currentDrawingEntity != entt::null)
             {
-                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, *_scene, parents);
+                currentDrawingEntity = RecursiveDraw(currentDrawingEntity, parents);
                 parents.clear();
             }
             ImGui::TreePop();
         }
         ImGui::End();
-
     }
 
     void EditorLayer::DrawImGuiFrame()
@@ -261,10 +259,11 @@ namespace goon
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
     }
-    entt::entity EditorLayer::RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents)
+
+    entt::entity EditorLayer::RecursiveDraw(entt::entity entity, std::vector<uint64_t> &parents)
     {
         static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-        goon::GameObject gameobject{entity, &scene};
+        goon::GameObject gameobject{entity, _scene};
         auto &hierarchyComponent = gameobject.GetComponent<goon::HierarchyComponent>();
         auto &tagComponent = gameobject.GetComponent<goon::TagComponent>();
         bool isInactive = gameobject.HasComponent<goon::InactiveComponent>();
@@ -278,10 +277,10 @@ namespace goon
                 entitySelected = gameobject.GetID();
             }
             DragDropSource(entity, tagComponent.Tag);
-            DragDropTargetAppend(entity, scene);
+            DragDropTargetAppend(entity);
             ImGui::PopID();
-            CreateImGuiPopup(scene, entity);
-            DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
+            CreateImGuiPopup(entity);
+            DragDropTargetBetween(entity, hierarchyComponent.Parent, parents);
         }
         else // If we do have children, then Create a drag/drop target after the tree is created.
         {
@@ -292,31 +291,31 @@ namespace goon
             }
             bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
             DragDropSource(entity, tagComponent.Tag);
-            DragDropTargetAppend(entity, scene);
+            DragDropTargetAppend(entity);
             // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 entitySelected = gameobject.GetID();
 
-            CreateImGuiPopup(scene, entity);
+            CreateImGuiPopup(entity);
             if (node_open)
             {
                 parents.push_back(gameobject.GetID());
-                DragDropTargetBetween(entt::null, entity, parents, scene);
+                DragDropTargetBetween(entt::null, entity, parents);
                 auto nextChild = hierarchyComponent.FirstChild;
                 while (nextChild != entt::null)
                 {
-                    nextChild = RecursiveDraw(nextChild, scene, parents);
+                    nextChild = RecursiveDraw(nextChild, parents);
                     std::remove(parents.begin(), parents.end(), gameobject.GetID());
                 }
                 ImGui::TreePop();
             }
-            DragDropTargetBetween(entity, hierarchyComponent.Parent, parents, scene);
+            DragDropTargetBetween(entity, hierarchyComponent.Parent, parents);
         }
         return hierarchyComponent.NextChild;
     }
 
     // TODO we need to change this from int to uint64_t
-    void EditorLayer::CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked)
+    void EditorLayer::CreateImGuiPopup(entt::entity entityRightClicked)
     {
         if (ImGui::BeginPopupContextItem(nullptr)) // entityTag is used as a id for the popup
         {
@@ -325,23 +324,23 @@ namespace goon
 
             if (ImGui::Button("Create Gameobject at root"))
             {
-                scene.CreateGameObject(name, scene.RootObject);
+                _scene->CreateGameObject(name, _scene->RootObject);
                 ImGui::CloseCurrentPopup();
             }
-            if (scene.RootObject != entityRightClicked)
+            if (_scene->RootObject != entityRightClicked)
             {
                 if (ImGui::Button("Create child Gameobject"))
                 {
-                    scene.CreateGameObject(name, entityRightClicked);
+                    _scene->CreateGameObject(name, entityRightClicked);
                     ImGui::CloseCurrentPopup();
                 }
                 if (ImGui::Button("Delete GameObject"))
                 {
-                    auto gameobject = goon::GameObject{entityRightClicked, &scene};
+                    auto gameobject = goon::GameObject{entityRightClicked, _scene};
                     auto hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
-                    auto parentGameobject = goon::GameObject{hierarchy.Parent, &scene};
+                    auto parentGameobject = goon::GameObject{hierarchy.Parent, _scene};
                     parentGameobject.RemoveChildEntity(entityRightClicked);
-                    scene.DestroyGameObject(entitySelected);
+                    _scene->DestroyGameObject(entitySelected);
                     ImGui::CloseCurrentPopup();
                 }
             }
@@ -349,14 +348,14 @@ namespace goon
         }
     }
     template <typename T>
-    bool EditorLayer::RemoveComponentPopup(goon::Scene &scene, entt::entity entityRightClicked)
+    bool EditorLayer::RemoveComponentPopup(entt::entity entityRightClicked)
     {
         bool removedComponent = false;
         if (ImGui::BeginPopupContextItem(nullptr)) // entityTag is used as a id for the popup
         {
             if (ImGui::Button("Remove Component"))
             {
-                goon::GameObject go{entityRightClicked, &scene};
+                goon::GameObject go{entityRightClicked, _scene};
                 go.RemoveComponent<T>();
                 ImGui::CloseCurrentPopup();
                 removedComponent = true;
@@ -380,18 +379,18 @@ namespace goon
     }
 
     // Should get rid of this function, and merge with the between, as that one checks the parents so is safer.
-    void EditorLayer::DragDropTargetAppend(entt::entity appendEntity, goon::Scene &scene)
+    void EditorLayer::DragDropTargetAppend(entt::entity appendEntity)
     {
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("test"))
             {
-                auto appendGO = goon::GameObject{appendEntity, &scene};
+                auto appendGO = goon::GameObject{appendEntity, _scene};
                 IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                 uint64_t payload_n = *(const uint64_t *)payload->Data;
-                goon::GameObject sourceGameObject{(entt::entity)payload_n, &scene};
+                goon::GameObject sourceGameObject{(entt::entity)payload_n, _scene};
                 auto &hierarchy = sourceGameObject.GetComponent<goon::HierarchyComponent>();
-                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+                auto oldParentGameObject = goon::GameObject{hierarchy.Parent, _scene};
                 oldParentGameObject.RemoveChildEntity((entt::entity)sourceGameObject);
                 appendGO.AppendChildEntity((entt::entity)payload_n);
             }
@@ -400,7 +399,7 @@ namespace goon
     }
 
     // This should be called before first child, and after every child except the last child.
-    void EditorLayer::DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents, goon::Scene &scene)
+    void EditorLayer::DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents)
     {
         static ImVec2 hoverSeparatorSize = {200, 5};
         if (thisFrameDrag || lastFrameDrag)
@@ -415,7 +414,7 @@ namespace goon
                     IM_ASSERT(payload->DataSize == sizeof(uint64_t));
                     uint64_t payload_n = *(const uint64_t *)payload->Data;
                     // Gameobject that was dropped here
-                    goon::GameObject gameobject{(entt::entity)payload_n, &scene};
+                    goon::GameObject gameobject{(entt::entity)payload_n, _scene};
                     auto &hierarchy = gameobject.GetComponent<goon::HierarchyComponent>();
                     if (previousChild != gameobject)
                     {
@@ -423,9 +422,9 @@ namespace goon
                         // is_tree and parents are needed for this, may be a better way?
                         if (std::find(parents.begin(), parents.end(), gameobject.GetID()) == parents.end())
                         {
-                            auto oldParentGameObject = goon::GameObject{hierarchy.Parent, &scene};
+                            auto oldParentGameObject = goon::GameObject{hierarchy.Parent, _scene};
                             oldParentGameObject.RemoveChildEntity((entt::entity)gameobject);
-                            auto newParentGameObject = goon::GameObject{parent, &scene};
+                            auto newParentGameObject = goon::GameObject{parent, _scene};
                             newParentGameObject.AddChildEntity((entt::entity)gameobject.GetID(), previousChild);
                         }
                     }
