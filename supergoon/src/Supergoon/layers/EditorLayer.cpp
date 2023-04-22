@@ -224,9 +224,6 @@ namespace goon
     }
     void EditorLayer::DrawHierarchy()
     {
-        ////
-        // Hierarchy Panel
-        ////
         ImGui::Begin("Hierarchy");
         // Handle dragging bool
         lastFrameDrag = thisFrameDrag;
@@ -240,7 +237,6 @@ namespace goon
         auto &rootHierarchy = rootGo.GetComponent<goon::HierarchyComponent>();
         entt::entity currentDrawingEntity = rootHierarchy.FirstChild;
         std::vector<uint64_t> parents;
-
         if (ImGui::TreeNode(_scene->SceneName().c_str()))
         {
             CreateImGuiPopup(rootGo);
@@ -291,20 +287,18 @@ namespace goon
             CreateImGuiPopup(entity);
             DragDropTargetBetween(entity, hierarchyComponent.Parent, parents);
         }
-        else // If we do have children, then Create a drag/drop target after the tree is created.
+        else // If we do have children
         {
             auto node_flags = base_flags;
             if (entitySelected == gameobject.GetEntity())
             {
                 node_flags |= 1 << 0;
             }
-            bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, tagComponent.Tag.c_str());
+            bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, "%s", tagComponent.Tag.c_str());
             DragDropSource(entity, tagComponent.Tag);
             DragDropTargetAppend(entity, parents);
-            // We keep this default(passing in null), so we know that this drop target will add it FIRST in the parents children.
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 entitySelected = gameobject.GetEntity();
-
             CreateImGuiPopup(entity);
             if (node_open)
             {
