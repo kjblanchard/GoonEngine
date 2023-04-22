@@ -3,8 +3,6 @@
 #include <cstring>
 #include <imgui.h>
 #include <Goon/core/Application.hpp>
-#include <backends/imgui_impl_sdl.h>
-#include <backends/imgui_impl_sdlrenderer.h>
 #include <Goon/scene/Scene.hpp>
 #include <Goon/scene/GameObject.hpp>
 #include <Goon/core/bgm_asset.hpp>
@@ -16,6 +14,7 @@
 #include <Goon/scene/components/IdComponent.hpp>
 #include <Goon/scene/components/InactiveComponent.hpp>
 #include <Supergoon/commands/Action.hpp>
+#include <Supergoon/layers/EditorLayer.hpp>
 
 static void CreateImGuiPopup(goon::Scene &scene, entt::entity entityRightClicked);
 static entt::entity RecursiveDraw(entt::entity entity, goon::Scene &scene, std::vector<uint64_t> &parents);
@@ -42,41 +41,10 @@ int demo(goon::Scene &scene)
 {
     auto application = goon::Application();
     application.InitializeSDL();
+    auto editor = goon::EditorLayer();
+    editor.InitializeImGui();
 
-    // IMGUI setup
 
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    // Setup Dear ImGui style
-    // ImGui::StyleColorsDark();
-    ImGui::StyleColorsLight();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForSDLRenderer(application.GetWindow(), application.GetRenderer());
-    ImGui_ImplSDLRenderer_Init(application.GetRenderer());
-
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // io.Fonts->AddFontDefault();
-    // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    // ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-    // IM_ASSERT(font != NULL);
-
-    bool show_demo_window = true;
     // Main loop
     bool done = false;
     while (!done)
@@ -89,7 +57,7 @@ int demo(goon::Scene &scene)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            ImGui_ImplSDL2_ProcessEvent(&event);
+            editor.ProcessImGuiEvents(&event);
             if (event.type == SDL_QUIT)
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(application.GetWindow()))
@@ -98,10 +66,7 @@ int demo(goon::Scene &scene)
 
         application.ResizeWindow();
 // Start the Dear ImGui frame
-        ImGui_ImplSDLRenderer_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-
-        ImGui::NewFrame();
+        editor.ImGuiNewFrame();
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -123,8 +88,8 @@ int demo(goon::Scene &scene)
             ImGui::EndMainMenuBar();
         }
 
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        if (editor.showDemoWindow)
+            ImGui::ShowDemoWindow(&editor.showDemoWindow);
 
         ////
         // Hierarchy Panel
@@ -279,15 +244,13 @@ int demo(goon::Scene &scene)
 
         ImGui::Render();
         application.StartDrawFrame();
-        ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+        editor.DrawImGuiFrame();
         application.EndDrawFrame();
         // TODO reenable sound, or put into a system.
         // UpdateSoundBro();
     }
 
-    ImGui_ImplSDLRenderer_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    editor.ExitImGui();
     application.DestroyWindow();
     application.ExitSdl();
 

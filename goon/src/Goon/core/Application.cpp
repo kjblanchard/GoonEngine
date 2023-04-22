@@ -2,6 +2,12 @@
 
 namespace goon
 {
+    Application* Application::_application = nullptr;
+    Application::Application()
+    {
+        if (!_application)
+            _application = this;
+    }
     bool Application::InitializeSDL()
     {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
