@@ -308,13 +308,14 @@ namespace goon
             CreateImGuiPopup(entity);
             if (node_open)
             {
-                parents.push_back(gameobject.GetID());
-                DragDropTargetBetween(entt::null, entity, parents);
+                auto newParents = std::vector<uint64_t>(parents);
+                newParents.push_back(gameobject.GetID());
+                DragDropTargetBetween(entt::null, entity, newParents);
                 auto nextChild = hierarchyComponent.FirstChild;
                 while (nextChild != entt::null)
                 {
-                    nextChild = RecursiveDraw(nextChild, parents);
-                    std::remove(parents.begin(), parents.end(), gameobject.GetID());
+                    nextChild = RecursiveDraw(nextChild, newParents);
+                    std::remove(newParents.begin(), newParents.end(), gameobject.GetID());
                 }
                 ImGui::TreePop();
             }
