@@ -2,11 +2,38 @@
 #include <Goon/core/Application.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
 
+// mono testing
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/debug-helpers.h>
+
 int demo(goon::Scene &scene);
 int main(int argc, char **argv)
 {
+    unsetenv("TERM");
     goon::Scene scene;
     scene.DeSerializeScene();
+    mono_set_dirs("/opt/homebrew/lib", "/opt/homebrew/etc");
+    MonoDomain *domain;
+    domain = mono_jit_init("hello");
+    MonoAssembly *assembly;
+    assembly = mono_domain_assembly_open(domain, "hello.dll");
+    if (!assembly)
+        return 99;
+    MonoImage *image = mono_assembly_get_image(assembly);
+    // auto retval = mono_jit_exec(domain, assembly, 0, argv);
+    MonoClass *klass = mono_class_from_name(image, "", "Class1");
+    MonoMethodDesc *ctorDesc = mono_method_desc_new("Class1:Class1()", false);  // works
+    MonoMethod *ctorMethod = mono_method_desc_search_in_class(ctorDesc, klass); // fails because klass is nullptr
+
+    MonoMethodDesc *doDesc = mono_method_desc_new("Class1::PrintTest()", false); // works
+    MonoMethod *doMethod = mono_method_desc_search_in_class(doDesc, klass);      // fails because klass is nullptr
+    /* allocate memory for the object */
+    MonoObject *my_class_instance = mono_object_new(domain, klass);
+    /* execute the default argument-less constructor */
+    mono_runtime_object_init(my_class_instance);
+    mono_runtime_invoke(doMethod, my_class_instance, NULL, NULL);
+    mono_jit_cleanup(domain);
     demo(scene);
 }
 
@@ -50,4 +77,3 @@ int demo(goon::Scene &scene)
 
     return 0;
 }
-

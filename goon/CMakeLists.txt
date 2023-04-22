@@ -93,6 +93,9 @@ add_subdirectory(external/goon_sound EXCLUDE_FROM_ALL)
 # yaml
 add_subdirectory(external/yaml-cpp EXCLUDE_FROM_ALL)
 
+# mono
+pkg_check_modules(mono-2 REQUIRED mono-2)
+
 # #########################################
 # For Debug, print aout all variables.
 # #########################################
@@ -158,6 +161,7 @@ target_link_libraries(goonEngine
         EnTT::EnTT
         goon_sound
         yaml-cpp
+        ${mono-2_LDFLAGS}
 
         PRIVATE
 )
@@ -166,6 +170,7 @@ target_include_directories(goonEngine
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
         external/goon_sound/src
+        ${mono-2_INCLUDEDIR}
 
         PRIVATE
         external/imgui
