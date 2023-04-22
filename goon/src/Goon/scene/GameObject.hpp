@@ -21,11 +21,15 @@ namespace goon
             return _scene->Registry().get<T>(_entityId);
         }
         uint64_t GetID() const { return (uint64_t)_entityId; }
-        template <typename T>
-        void* GetComponentUniqueIntImGui()
+        entt::entity GetEntity() const { return _entityId; }
+        void *GetGameobjectUniqueIntImgui()
         {
-                return (void *)(intptr_t) (GetID() + typeid(T).hash_code() );
-
+            return (void *)(intptr_t)(GetID() + typeid(GameObject).hash_code());
+        }
+        template <typename T>
+        void *GetComponentUniqueIntImGui()
+        {
+            return (void *)(intptr_t)(GetID() + typeid(T).hash_code());
         }
         operator entt::entity() { return _entityId; }
 
@@ -34,23 +38,34 @@ namespace goon
         {
             return _scene->Registry().all_of<T>(_entityId);
         }
+        template <typename T>
+        void RemoveComponent()
+        {
+            if (!HasComponent<T>())
+                return;
+            _scene->Registry().remove<T>(_entityId);
+        }
+        void AddChildEntity(entt::entity child, entt::entity previousChild);
+        void RemoveChildEntity(entt::entity child);
 
         /**
          * @brief Adds a child entity to this gameobject, as well as makes this gameobject his parent.
          *
          * @param child The child to add to this gameobjects hierarchy component
          */
-        void AddChildEntity(entt::entity child);
+        void AppendChildEntity(entt::entity child);
+        void UpdatePreviousChild(uint64_t previousChild);
+        void UpdatePreviousChild(entt::entity previousChild);
+
+    private:
+        entt::entity _entityId;
+        Scene *_scene;
         /**
          * @brief Adds a parent to this gameobject
          *
          * @param parent The new parent for this gameobject
          */
         void AddParentEntity(entt::entity parent);
-
-    private:
-        entt::entity _entityId;
-        Scene *_scene;
     };
 
 }

@@ -5,6 +5,7 @@
 #include <Goon/scene/components/TransformComponent.hpp>
 #include <Goon/scene/components/IdComponent.hpp>
 #include <Goon/scene/components/HierarchyComponent.hpp>
+#include <Goon/scene/components/InactiveComponent.hpp>
 
 // yml / file operations
 #include <yaml-cpp/yaml.h>
@@ -14,6 +15,7 @@
 // static entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
 namespace goon
 {
+
     ////////////////////
     // Yml emitters
     ////////////////////
@@ -42,11 +44,12 @@ namespace goon
         out << YAML::Key << "rootObject";
         out << YAML::Value << GetGuidOfEntity(RootObject, *this);
         out << YAML::Key << "gameobjects";
-        // out << YAML::Value << YAML::BeginSeq;
         out << YAML::Value << YAML::BeginMap;
         _registry.each([&](auto entityID)
                        {
                 goon::GameObject go { entityID , this };
+                if(!go.HasComponent<InactiveComponent>())
+                {
                 auto& tagComponent = go.GetComponent<goon::TagComponent>();
                 auto& idComponent = go.GetComponent<goon::IdComponent>();
                 uint64_t id = idComponent.Guid;
@@ -89,7 +92,9 @@ namespace goon
                     out << YAML::Value << GetGuidOfEntity(hierarchyComponent.Parent, *this);
                     out << YAML::EndMap;
                 }
-                out << YAML::EndSeq  << YAML::EndMap; });
+                out << YAML::EndSeq  << YAML::EndMap;
+
+                } });
         out << YAML::EndMap;
         out << YAML::EndMap;
         std::cout << out.c_str() << std::endl;
@@ -111,13 +116,12 @@ namespace goon
     {
         YAML::Node config = YAML::LoadFile("assets/" + _sceneName + ".yml");
         auto sceneName = config["sceneName"].as<std::string>();
-        // uint64_t nextEntityId = 0, currentEntityId = 0;
         auto rootObject = Guid(config["rootObject"].as<uint64_t>());
         auto gameobjects = config["gameobjects"];
         // TODO replace the exit
         if (!gameobjects)
             exit(1);
-        CreateGameObjectFromYaml(rootObject, entt::null,  gameobjects);
+        CreateGameObjectFromYaml(rootObject, entt::null, gameobjects);
     }
 
     GameObject Scene::CreateGameObject(std::string &name, entt::entity parent)
@@ -127,7 +131,13 @@ namespace goon
         _registry.emplace<TagComponent>(thing, name);
         _registry.emplace<IdComponent>(thing);
         _registry.emplace<HierarchyComponent>(thing);
-        return GameObject(thing, this);
+        auto guy = GameObject(thing, this);
+        if (parent != entt::null)
+        {
+            auto parentGo = GameObject(parent, this);
+            parentGo.AppendChildEntity(guy);
+        }
+        return guy;
     }
 
     entt::entity Scene::CreateGameObjectFromYaml(uint64_t entityId, entt::entity parent, YAML::Node &gameObjectNode)
@@ -141,46 +151,44 @@ namespace goon
         _registry.emplace<HierarchyComponent>(goEntity);
         GameObject go = {goEntity, this};
         auto components = goData["components"];
-        for(auto component : components )
+        for (auto component : components)
         {
             auto componentName = component["componentName"].as<std::string>();
             // Try and create all of the component types.
-        // BgmComponent(std::string soundFile, float loopBegin = 0.0f, float loopEnd = 0.0f, bool bg = false, float volume = 1.0f)
-            if(componentName == "bgm")
+            if (componentName == "bgm")
             {
                 auto fileName = component["fileName"].as<std::string>();
                 auto loopBegin = component["loopBegin"].as<float>();
                 auto loopEnd = component["loopEnd"].as<float>();
                 auto ambient = component["ambientSound"].as<bool>();
-                auto volume = component["volume"].as<int>();
+                auto volume = component["volume"].as<float>();
                 _registry.emplace<BgmComponent>(goEntity, fileName, loopBegin, loopEnd, ambient, volume);
-                // bgmComponent.
-
             }
-            else if(componentName == "hierarchy")
+            else if (componentName == "hierarchy")
             {
-                // If hierarchy.nextchild, nextchild = recursive
-                // _registry.emplace<HierarchyComponent>(goEntity);
                 auto firstChild = component["firstChild"].as<uint64_t>();
                 auto nextChild = component["nextChild"].as<uint64_t>();
-                // auto parent = component["parent"].as<uint64_t>();
-                auto& hierarchy = go.GetComponent<goon::HierarchyComponent>();
+                auto &hierarchy = go.GetComponent<goon::HierarchyComponent>();
                 hierarchy.Parent = parent;
-                if(firstChild)
+                if (firstChild)
                 {
-                    auto& hierarchy = go.GetComponent<goon::HierarchyComponent>();
+                    auto &hierarchy = go.GetComponent<goon::HierarchyComponent>();
                     hierarchy.FirstChild = CreateGameObjectFromYaml(firstChild, goEntity, gameObjectNode);
                 }
-                if(nextChild)
+                if (nextChild)
                 {
-                    hierarchy.NextChild = CreateGameObjectFromYaml(nextChild, goEntity, gameObjectNode);
+                    hierarchy.NextChild = CreateGameObjectFromYaml(nextChild, parent, gameObjectNode);
                 }
-                // If hierarchy.firstchild, firstchild = Recursive
-
             }
         }
         return goEntity;
-        // end
+    }
+
+    void Scene::DestroyGameObject(uint64_t entityId)
+    {
+        // TODO: Need to destroy all children in here.
+        auto entity = (entt::entity)entityId;
+        _registry.emplace<InactiveComponent>(entity);
     }
 
 }

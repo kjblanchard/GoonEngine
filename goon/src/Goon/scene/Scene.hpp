@@ -1,5 +1,6 @@
 #pragma once
 #include <entt/entity/registry.hpp>
+#include <string>
 
 namespace YAML
 {
@@ -7,12 +8,18 @@ namespace YAML
 }
 namespace goon
 {
+    enum class GameObjectComponents
+    {
+        None = 0,
+        BGM = 1,
+    };
     class GameObject;
     class Scene
     {
     public:
         Scene();
         GameObject CreateGameObject(std::string &name, entt::entity parent = entt::null);
+        void DestroyGameObject(uint64_t entityId);
 
         entt::registry &Registry() { return _registry; }
         template <typename T>
