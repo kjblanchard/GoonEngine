@@ -184,7 +184,21 @@ target_include_directories(goonEngine
 # #########################################
 # Install
 # #########################################
-# set(FOLDERS_TO_COPY shaders)
-# install(DIRECTORY ${FOLDERS_TO_COPY}
-# DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-# COMPONENT assets)
+
+# MACOS SPECIFIC CURRENTLY FOR MONO, this likely should be done differently, as a install target, or something.  Read the docs.
+set(FOLDERS_TO_COPY /opt/homebrew/lib/mono/4.5)
+# Copy mono lib folder over, this is needed for embedding mono
+install(DIRECTORY ${FOLDERS_TO_COPY}
+        DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/mono/lib
+        COMPONENT mono)
+
+# Copy the built dylib for mono over, as this cannot be built in cmake and should be built locally.
+install(FILES /opt/homebrew/lib/libmono-2.0.dylib
+        DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+)
+
+# Copy the template file over until we automate this in the engine
+install(FILES /Users/kevin/git/engine/goon/supergoon/template.yml
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
+        RENAME default.yml
+)

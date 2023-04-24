@@ -10,10 +10,11 @@
 int demo(goon::Scene &scene);
 int main(int argc, char **argv)
 {
+    // Issues with terminal breaking mono console commands, so this term is needed.
     unsetenv("TERM");
     goon::Scene scene;
     scene.DeSerializeScene();
-    mono_set_dirs("/opt/homebrew/lib", "/opt/homebrew/etc");
+    mono_set_assemblies_path("../lib/mono/lib");
     MonoDomain *domain;
     domain = mono_jit_init("hello");
     MonoAssembly *assembly;
@@ -21,10 +22,9 @@ int main(int argc, char **argv)
     if (!assembly)
         return 99;
     MonoImage *image = mono_assembly_get_image(assembly);
-    // auto retval = mono_jit_exec(domain, assembly, 0, argv);
     MonoClass *klass = mono_class_from_name(image, "", "Class1");
     MonoMethodDesc *ctorDesc = mono_method_desc_new("Class1:Class1()", false);  // works
-    MonoMethod *ctorMethod = mono_method_desc_search_in_class(ctorDesc, klass); // fails because klass is nullptr
+    // MonoMethod *ctorMethod = mono_method_desc_search_in_class(ctorDesc, klass); // fails because klass is nullptr
 
     MonoMethodDesc *doDesc = mono_method_desc_new("Class1::PrintTest()", false); // works
     MonoMethod *doMethod = mono_method_desc_search_in_class(doDesc, klass);      // fails because klass is nullptr
