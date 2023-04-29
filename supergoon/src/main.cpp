@@ -1,39 +1,27 @@
 #include <Goon/scene/Scene.hpp>
 #include <Goon/core/Application.hpp>
+#include <Goon/systems/ScriptSystem.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
-
-// mono testing
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
 
 int demo(goon::Scene &scene);
 int main(int argc, char **argv)
 {
-    // Issues with terminal breaking mono console commands, so this term is needed.
-    unsetenv("TERM");
     goon::Scene scene;
     scene.DeSerializeScene();
-    mono_set_assemblies_path("../lib/mono/lib");
-    MonoDomain *domain;
-    domain = mono_jit_init("hello");
-    MonoAssembly *assembly;
-    assembly = mono_domain_assembly_open(domain, "hello.dll");
-    if (!assembly)
-        return 99;
-    MonoImage *image = mono_assembly_get_image(assembly);
-    MonoClass *klass = mono_class_from_name(image, "", "Class1");
-    MonoMethodDesc *ctorDesc = mono_method_desc_new("Class1:Class1()", false);  // works
-    // MonoMethod *ctorMethod = mono_method_desc_search_in_class(ctorDesc, klass); // fails because klass is nullptr
 
-    MonoMethodDesc *doDesc = mono_method_desc_new("Class1::PrintTest()", false); // works
-    MonoMethod *doMethod = mono_method_desc_search_in_class(doDesc, klass);      // fails because klass is nullptr
-    /* allocate memory for the object */
-    MonoObject *my_class_instance = mono_object_new(domain, klass);
-    /* execute the default argument-less constructor */
-    mono_runtime_object_init(my_class_instance);
-    mono_runtime_invoke(doMethod, my_class_instance, NULL, NULL);
-    mono_jit_cleanup(domain);
+    // ScriptTesting
+    auto domain = goon::ScriptSystem::InitializeMono();
+    auto assembly = goon::ScriptSystem::OpenAssembly("hello.dll", domain);
+    auto image = goon::ScriptSystem::OpenImage(assembly);
+    auto class1 = goon::ScriptSystem::GetClassByName(image, "", "Class1");
+    auto classInstance = goon::ScriptSystem::InstantiateClassObject(domain, class1);
+    auto ctormethod = goon::ScriptSystem::GetConstructorInClass(class1);
+    auto method = goon::ScriptSystem::GetMethodByName("PrintTest", "", class1);
+    goon::ScriptSystem::CallMethod(ctormethod, classInstance);
+    goon::ScriptSystem::CallMethod(method, classInstance);
+    goon::ScriptSystem::CloseMono(domain);
+    // EndScriptTesting
+
     demo(scene);
 }
 

@@ -124,6 +124,7 @@ namespace goon
         CreateGameObjectFromYaml(rootObject, entt::null, gameobjects);
     }
 
+
     GameObject Scene::CreateGameObject(std::string &name, entt::entity parent)
     {
         auto thing = _registry.create();
