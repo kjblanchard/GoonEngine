@@ -1,5 +1,6 @@
 #include <Goon/scene/Scene.hpp>
 #include <Goon/core/Application.hpp>
+#include <Goon/systems/ScriptSystem.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
 
 int demo(goon::Scene &scene);
@@ -7,6 +8,20 @@ int main(int argc, char **argv)
 {
     goon::Scene scene;
     scene.DeSerializeScene();
+
+    // ScriptTesting
+    auto domain = goon::ScriptSystem::InitializeMono();
+    auto assembly = goon::ScriptSystem::OpenAssembly("hello.dll", domain);
+    auto image = goon::ScriptSystem::OpenImage(assembly);
+    auto class1 = goon::ScriptSystem::GetClassByName(image, "", "Class1");
+    auto classInstance = goon::ScriptSystem::InstantiateClassObject(domain, class1);
+    auto ctormethod = goon::ScriptSystem::GetConstructorInClass(class1);
+    auto method = goon::ScriptSystem::GetMethodByName("PrintTest", "", class1);
+    goon::ScriptSystem::CallMethod(ctormethod, classInstance);
+    goon::ScriptSystem::CallMethod(method, classInstance);
+    goon::ScriptSystem::CloseMono(domain);
+    // EndScriptTesting
+
     demo(scene);
 }
 
@@ -50,4 +65,3 @@ int demo(goon::Scene &scene)
 
     return 0;
 }
-

@@ -1,0 +1,10 @@
+sceneName: default
+rootObject: 1
+gameobjects:
+  1:
+    name: hello
+    components:
+      - componentName: hierarchy
+        firstChild: 0
+        nextChild: 0
+        parent: 0
