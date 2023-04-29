@@ -18,6 +18,7 @@ A C++ engine with OpenGL rendering and C# (mono) scripting, using Dear ImGui as 
 - SDL2: Low Level handling of windowing, events, input
 - OpenAL: Used with goon_sound for cross-platform 3D sound
 - OpenGL: Rendering Backend
+- Mono: C# (.NET framework) scripting
 - Dear ImGui: Editor
 - EnTT: Entity Component System
 - Make: Streamlining building with one command
