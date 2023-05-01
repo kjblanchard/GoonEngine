@@ -22,6 +22,9 @@ namespace goon
         }
         uint64_t GetID() const { return (uint64_t)_entityId; }
         entt::entity GetEntity() const { return _entityId; }
+
+        const char *GetName();
+
         void *GetGameobjectUniqueIntImgui()
         {
             return (void *)(intptr_t)(GetID() + typeid(GameObject).hash_code());

@@ -124,7 +124,6 @@ namespace goon
         CreateGameObjectFromYaml(rootObject, entt::null, gameobjects);
     }
 
-
     GameObject Scene::CreateGameObject(std::string &name, entt::entity parent)
     {
         auto thing = _registry.create();
@@ -190,6 +189,11 @@ namespace goon
         // TODO: Need to destroy all children in here.
         auto entity = (entt::entity)entityId;
         _registry.emplace<InactiveComponent>(entity);
+    }
+    GameObject Scene::GetGameObjectById(uint64_t entityId)
+    {
+        auto gameobject = GameObject{(entt::entity)entityId, this};
+        return gameobject;
     }
 
 }

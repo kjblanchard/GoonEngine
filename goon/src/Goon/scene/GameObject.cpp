@@ -104,6 +104,16 @@ namespace goon
             }
         }
     }
+    const char *GameObject::GetName()
+    {
+        if (this->HasComponent<TagComponent>())
+        {
+            auto &tagComponent = this->GetComponent<TagComponent>();
+            return tagComponent.Tag.c_str();
+        }
+        else
+            return "";
+    }
     void GameObject::RemoveChildEntity(entt::entity child)
     {
         auto newChildGameObject = GameObject{child, _scene};
