@@ -36,7 +36,7 @@ brebuild: clean bconfigure build install
 wrebuild: clean wconfigure build install
 
 scripting:
-	@cd ./goon/src/GoonScripting && csc /target:library /out:../../../$(BUILD_FOLDER)/goon.dll InternalCalls.cs
+	@cd ./goon/src/GoonScripting && csc /target:library /doc:../../../$(BUILD_FOLDER)/goon.xml /out:../../../$(BUILD_FOLDER)/goon.dll InternalCalls.cs
 
 run:
 	@cd ./$(BUILD_FOLDER) && ./$(BINARY_NAME)
