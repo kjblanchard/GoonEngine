@@ -17,6 +17,7 @@ namespace goon
     class Scene
     {
     public:
+        static Scene *GetScene() { return _scene; }
         Scene();
         GameObject CreateGameObject(std::string &name, entt::entity parent = entt::null);
         void DestroyGameObject(uint64_t entityId);
@@ -31,6 +32,7 @@ namespace goon
 
     private:
         std::string _sceneName = "default";
+        static Scene *_scene;
         entt::registry _registry;
         entt::entity CreateGameObjectFromYaml(uint64_t entityId, entt::entity parent, YAML::Node &gameObjectNode);
     };

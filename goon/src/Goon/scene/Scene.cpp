@@ -15,6 +15,7 @@
 // static entt::entity CreateGameObjectFromYaml(uint64_t entityId, YAML::Node &gameObjectNode);
 namespace goon
 {
+    Scene *Scene::_scene = nullptr;
 
     ////////////////////
     // Yml emitters
@@ -32,6 +33,7 @@ namespace goon
 
     Scene::Scene()
     {
+        _scene = this;
     }
     Guid GetGuidOfEntity(entt::entity entity, Scene &scene);
 
