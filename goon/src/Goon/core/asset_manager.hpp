@@ -39,6 +39,10 @@ namespace goon
         }
 
     private:
+        /**
+         * @brief All of the loaded assets, so that we don't have to reload them when another guy asks for it.
+         *
+         */
         static std::unordered_map<std::string, std::shared_ptr<Asset>> _loadedAssets;
     };
 }
