@@ -21,14 +21,12 @@ namespace goon
         GameObject CreateGameObject(std::string &name, entt::entity parent = entt::null);
         void DestroyGameObject(uint64_t entityId);
         GameObject GetGameObjectById(uint64_t entityId);
-
         entt::registry &Registry() { return _registry; }
         template <typename T>
         void OnComponentAdded(GameObject entity, T &component);
         void SerializeScene();
         void DeSerializeScene();
         std::string SceneName() { return _sceneName; }
-
         entt::entity RootObject;
 
     private:

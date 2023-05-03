@@ -10,9 +10,7 @@ namespace goon
         : _entityId(entityId), _scene(scene)
     {
     }
-    GameObject::~GameObject()
-    {
-    }
+
     void GameObject::AppendChildEntity(entt::entity child)
     {
         auto childGameObject = GameObject{child, _scene};
