@@ -10,9 +10,7 @@ namespace goon
         : _entityId(entityId), _scene(scene)
     {
     }
-    GameObject::~GameObject()
-    {
-    }
+
     void GameObject::AppendChildEntity(entt::entity child)
     {
         auto childGameObject = GameObject{child, _scene};
@@ -103,6 +101,16 @@ namespace goon
                 nextIterChild = nextChildHierarchy.NextChild;
             }
         }
+    }
+    const char *GameObject::GetName()
+    {
+        if (this->HasComponent<TagComponent>())
+        {
+            auto &tagComponent = this->GetComponent<TagComponent>();
+            return tagComponent.Tag.c_str();
+        }
+        else
+            return "";
     }
     void GameObject::RemoveChildEntity(entt::entity child)
     {

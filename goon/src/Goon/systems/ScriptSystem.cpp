@@ -2,15 +2,20 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
+#include <Goon/scripting/InternalCalls.hpp>
 namespace goon
 {
+    Scene *ScriptSystem::scene;
+    MonoDomain *ScriptSystem::domain;
     MonoDomain *ScriptSystem::InitializeMono()
     {
         // Issues with terminal breaking mono console commands with segv in macos
         unsetenv("TERM");
         mono_set_assemblies_path("../lib/mono/lib");
-        MonoDomain *domain;
         domain = mono_jit_init("hello");
+
+        AddInternalCall("Entity_GetGameObjectById", (void *)InternalCalls::GameObject_GetGameObjectById);
+        AddInternalCall("Entity_GetGameObjectName", (void *)InternalCalls::GameObject_GetGameObjectName);
         return domain;
     }
 

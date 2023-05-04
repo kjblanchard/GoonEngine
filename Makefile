@@ -1,4 +1,4 @@
-.PHONY: config configure build release clean rebuild run lldb debug doc windows
+.PHONY: config configure build release clean rebuild run lldb debug doc windows scripting
 
 BUILD_SYSTEM = Ninja
 XCODE_BUILD_SYSTEM = Xcode
@@ -31,9 +31,12 @@ install:
 clean:
 	@ - rm -rf build
 
-rebuild: clean configure build install
+rebuild: clean configure build install scripting
 brebuild: clean bconfigure build install
 wrebuild: clean wconfigure build install
+
+scripting:
+	@cd ./goon/src/GoonScripting && csc /target:library /doc:../../../$(BUILD_FOLDER)/goon.xml /out:../../../$(BUILD_FOLDER)/goon.dll InternalCalls.cs
 
 run:
 	@cd ./$(BUILD_FOLDER) && ./$(BINARY_NAME)

@@ -1,6 +1,7 @@
 #include <Goon/scene/Scene.hpp>
 #include <Goon/core/Application.hpp>
 #include <Goon/systems/ScriptSystem.hpp>
+#include <Goon/core/Log.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
 
 int demo(goon::Scene &scene);
@@ -10,6 +11,7 @@ int main(int argc, char **argv)
     scene.DeSerializeScene();
 
     // ScriptTesting
+    goon::ScriptSystem::scene = &scene;
     auto domain = goon::ScriptSystem::InitializeMono();
     auto assembly = goon::ScriptSystem::OpenAssembly("hello.dll", domain);
     auto image = goon::ScriptSystem::OpenImage(assembly);
@@ -20,6 +22,8 @@ int main(int argc, char **argv)
     goon::ScriptSystem::CallMethod(ctormethod, classInstance);
     goon::ScriptSystem::CallMethod(method, classInstance);
     goon::ScriptSystem::CloseMono(domain);
+    goon::Log::Init();
+    GN_CORE_ERROR("What in the world is this {}" , 1);
     // EndScriptTesting
 
     demo(scene);

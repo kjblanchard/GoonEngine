@@ -1,10 +1,10 @@
 #pragma once
 #include <SDL_events.h>
 #include <entt/fwd.hpp>
-namespace ImGui
-{
-    class ImVec2;
-}
+//TODO should we forward declare this?  Prolly doesn't matter and makes us use unique ptr easily
+#include <Supergoon/panels/MenuBarPanel.hpp>
+#include <Supergoon/panels/HierarchyPanel.hpp>
+#include <Supergoon/panels/InspectorPanel.hpp>
 
 namespace goon
 {
@@ -19,23 +19,20 @@ namespace goon
         void DrawImGuiFrame();
         void ExitImGui();
         void LoadScene(Scene &scene) { _scene = &scene; }
-        entt::entity RecursiveDraw(entt::entity entity, std::vector<uint64_t> &parents);
-        void CreateImGuiPopup(entt::entity entityRightClicked);
-        template <typename T>
-        bool RemoveComponentPopup(entt::entity entityRightClicked);
-        void DragDropSource(entt::entity entity, std::string &entityName);
-        void DragDropTargetAppend(entt::entity appendEntity, std::vector<uint64_t>& parents);
-        void DragDropTargetBetween(entt::entity previousChild, entt::entity parent, std::vector<uint64_t> &parents);
-        entt::entity entitySelected = entt::null;
-        bool lastFrameDrag = false;
-        bool thisFrameDrag = false;
+        entt::entity entitySelected;
         bool showDemoWindow = true;
 
     private:
-        void DrawMainMenu();
+        void CreateAllPanels();
         void DrawDebugWindow();
-        void DrawHierarchy();
-        void DrawInspector();
+
+
+        private:
+        std::unique_ptr<MenuBarPanel> _menuBarPanel;
+        std::unique_ptr<HierarchyPanel> _hierarchyPanel;
+        std::unique_ptr<InspectorPanel> _inspectorPanel;
+
+
         Scene *_scene;
     };
 }
