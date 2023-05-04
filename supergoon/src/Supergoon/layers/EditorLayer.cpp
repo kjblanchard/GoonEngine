@@ -1,22 +1,9 @@
+#include <Supergoon/layers/EditorLayer.hpp>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <Goon/scene/Scene.hpp>
-#include <entt/entity/entity.hpp>
-#include <Goon/scene/GameObject.hpp>
-#include <Goon/scene/Scene.hpp>
 #include <Goon/core/Application.hpp>
-#include <Goon/scene/GameObject.hpp>
-#include <Goon/core/bgm_asset.hpp>
-#include <Goon/core/asset_manager.hpp>
-#include <Goon/scene/components/BgmComponent.hpp>
-#include <Goon/scene/components/TagComponent.hpp>
-#include <Goon/scene/components/HierarchyComponent.hpp>
-#include <Goon/scene/components/IdComponent.hpp>
-#include <Goon/scene/components/InactiveComponent.hpp>
-#include <Supergoon/commands/Action.hpp>
-#include <Supergoon/layers/EditorLayer.hpp>
-#include <Supergoon/layers/EditorLayer.hpp>
 
 namespace goon
 {
@@ -80,7 +67,6 @@ namespace goon
         _hierarchyPanel->DrawPanel(&scene);
         _inspectorPanel->DrawPanel(&scene);
         DrawDebugWindow();
-        DrawInspector();
         ImGui::Render();
     }
 
@@ -88,9 +74,6 @@ namespace goon
     {
         if (showDemoWindow)
             ImGui::ShowDemoWindow(&showDemoWindow);
-    }
-    void EditorLayer::DrawInspector()
-    {
     }
 
     void EditorLayer::DrawImGuiFrame()

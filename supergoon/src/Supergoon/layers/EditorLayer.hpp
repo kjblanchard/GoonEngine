@@ -19,19 +19,12 @@ namespace goon
         void DrawImGuiFrame();
         void ExitImGui();
         void LoadScene(Scene &scene) { _scene = &scene; }
-        void CreateImGuiPopup(entt::entity entityRightClicked);
-        // template <typename T>
-        // bool RemoveComponentPopup(entt::entity entityRightClicked);
-        // entt::entity entitySelected = entt::null;
         entt::entity entitySelected;
         bool showDemoWindow = true;
 
     private:
         void CreateAllPanels();
-
         void DrawDebugWindow();
-        void DrawHierarchy();
-        void DrawInspector();
 
 
         private:

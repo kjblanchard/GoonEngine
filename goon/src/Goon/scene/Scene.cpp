@@ -188,13 +188,34 @@ namespace goon
 
     void Scene::DestroyGameObject(uint64_t entityId)
     {
-        // TODO: Need to destroy all children in here.
-        auto entity = (entt::entity)entityId;
-        _registry.emplace<InactiveComponent>(entity);
+        auto go = GetGameObjectById(entityId);
+
+        auto &parentHierarchy = go.GetComponent<HierarchyComponent>();
+        // Get the gameobject child if he has any
+        auto nextIterChild = parentHierarchy.FirstChild;
+        while (nextIterChild != entt::null)
+        {
+            // If He has any children, we should recurse into them and destroy them as well.
+            auto nextGameObject = _scene->GetGameObjectById(nextIterChild);
+            auto &nextHierarchy = nextGameObject.GetComponent<HierarchyComponent>();
+            if (nextHierarchy.FirstChild != entt::null)
+                DestroyGameObject((uint64_t)nextHierarchy.FirstChild);
+            _registry.emplace<InactiveComponent>((entt::entity)nextIterChild);
+            nextIterChild = nextHierarchy.NextChild;
+        }
+        // Actually destroy it
+        _registry.emplace<InactiveComponent>((entt::entity)entityId);
     }
+
     GameObject Scene::GetGameObjectById(uint64_t entityId)
     {
         auto gameobject = GameObject{(entt::entity)entityId, this};
+        return gameobject;
+    }
+
+    GameObject Scene::GetGameObjectById(entt::entity entityId)
+    {
+        auto gameobject = GameObject{entityId, this};
         return gameobject;
     }
 

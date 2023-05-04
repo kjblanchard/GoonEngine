@@ -115,5 +115,4 @@ namespace goon
             return (void *)(intptr_t)(GetID() + typeid(T).hash_code());
         }
     };
-
 }
