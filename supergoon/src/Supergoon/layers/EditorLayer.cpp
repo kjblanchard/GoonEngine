@@ -1,7 +1,7 @@
 #include <Supergoon/layers/EditorLayer.hpp>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
-#include <backends/imgui_impl_sdlrenderer.h>
+#include <backends/imgui_impl_opengl3.h>
 #include <Goon/scene/Scene.hpp>
 #include <Goon/core/Application.hpp>
 
