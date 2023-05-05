@@ -1,4 +1,5 @@
 #include <Goon/core/Application.hpp>
+#include <glad/glad.h>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL_opengles2.h>
 #else
@@ -76,6 +77,7 @@ namespace goon
         SDL_GetWindowSize(_window, &width, &height);
 
         SDL_GL_GetDrawableSize(_window, &rwidth, &rheight);
+        gladLoadGL();
 
 
         // SDL_GetRendererOutputSize(_renderer, &rwidth, &rheight);

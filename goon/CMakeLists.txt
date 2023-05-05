@@ -93,6 +93,9 @@ add_subdirectory(external/goon_sound EXCLUDE_FROM_ALL)
 # yaml
 add_subdirectory(external/yaml-cpp EXCLUDE_FROM_ALL)
 
+# GLAD
+add_subdirectory(external/glad EXCLUDE_FROM_ALL)
+
 # mono
 pkg_check_modules(mono-2 REQUIRED mono-2)
 
@@ -161,6 +164,7 @@ target_link_libraries(goonEngine
         EnTT::EnTT
         goon_sound
         yaml-cpp
+        glad
         ${mono-2_LDFLAGS}
 
         PRIVATE
@@ -179,6 +183,7 @@ target_include_directories(goonEngine
         external/SDL
         external/entt/src
         external/yaml-cpp/include
+        external/glad/include
 )
 
 # #########################################
