@@ -21,8 +21,11 @@ namespace goon
         ImGui::StyleColorsLight();
         auto application = Application::GetApplication();
         // Setup Platform/Renderer backends
-        ImGui_ImplSDL2_InitForSDLRenderer(application->GetWindow(), application->GetRenderer());
-        ImGui_ImplSDLRenderer_Init(application->GetRenderer());
+
+        ImGui_ImplSDL2_InitForOpenGL(application->GetWindow(), application->GetGLContext());
+        ImGui_ImplOpenGL3_Init(application->glslVersion);
+        // ImGui_ImplSDL2_InitForSDLRenderer(application->GetWindow(), application->GetRenderer());
+        // ImGui_ImplSDLRenderer_Init(application->GetRenderer());
         // Load Fonts
         // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
         // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
@@ -39,16 +42,16 @@ namespace goon
         // ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
         // IM_ASSERT(font != NULL);
 
-        //TODO this should be moved to an Init function
+        // TODO this should be moved to an Init function
         CreateAllPanels();
     }
-        void EditorLayer::CreateAllPanels()
-        {
-            //TODO shared ptr
-            _menuBarPanel = std::make_unique<MenuBarPanel>();
-            _hierarchyPanel = std::make_unique<HierarchyPanel>(this);
-            _inspectorPanel = std::make_unique<InspectorPanel>(this);
-        }
+    void EditorLayer::CreateAllPanels()
+    {
+        // TODO shared ptr
+        _menuBarPanel = std::make_unique<MenuBarPanel>();
+        _hierarchyPanel = std::make_unique<HierarchyPanel>(this);
+        _inspectorPanel = std::make_unique<InspectorPanel>(this);
+    }
 
     void EditorLayer::ProcessImGuiEvents(SDL_Event *event)
     {
@@ -56,7 +59,7 @@ namespace goon
     }
     void EditorLayer::ImGuiNewFrame()
     {
-        ImGui_ImplSDLRenderer_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
     }
@@ -78,15 +81,15 @@ namespace goon
 
     void EditorLayer::DrawImGuiFrame()
     {
-        ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void EditorLayer::ExitImGui()
     {
-        ImGui_ImplSDLRenderer_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
     }
-
 
 }
