@@ -24,11 +24,10 @@ namespace goon
         void ExitSdl();
         static Application* GetApplication() { return _application; }
 
-//TODO make private
+//TODO make window class.
         const char* glslVersion;
     private:
         SDL_Window *_window;
-        // SDL_Renderer *_renderer;
         SDL_GLContext *_context;
         static Application* _application;
 

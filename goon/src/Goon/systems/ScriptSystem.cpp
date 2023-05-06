@@ -5,7 +5,7 @@
 #include <Goon/scripting/InternalCalls.hpp>
 namespace goon
 {
-    Scene *ScriptSystem::scene;
+    // Scene *ScriptSystem::scene;
     MonoDomain *ScriptSystem::domain;
     MonoDomain *ScriptSystem::InitializeMono()
     {

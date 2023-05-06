@@ -1,14 +1,13 @@
 #pragma once
 #include <mono/metadata/class.h>
+#include <Goon/scene/Scene.hpp>
 
 namespace goon
 {
-    class Scene;
     class ScriptSystem
     {
     public:
-        // TODO this should be moved.
-        static Scene *scene;
+
         /**
          * @brief Initializes the JIT compiler, and sets the assemblies path for mono libs
          *
@@ -85,6 +84,8 @@ namespace goon
          * @param domain The domain to shutdown.
          */
         static void CloseMono(MonoDomain *domain);
+
+        static Scene* GetScene() { return Scene::GetScene(); }
 
 
         static MonoDomain* domain;

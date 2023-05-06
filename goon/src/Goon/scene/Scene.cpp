@@ -6,6 +6,7 @@
 #include <Goon/scene/components/IdComponent.hpp>
 #include <Goon/scene/components/HierarchyComponent.hpp>
 #include <Goon/scene/components/InactiveComponent.hpp>
+#include <Goon/core/Log.hpp>
 
 // yml / file operations
 #include <yaml-cpp/yaml.h>
@@ -122,9 +123,10 @@ namespace goon
         auto sceneName = config["sceneName"].as<std::string>();
         auto rootObject = Guid(config["rootObject"].as<uint64_t>());
         auto gameobjects = config["gameobjects"];
-        // TODO replace the exit
         if (!gameobjects)
-            exit(1);
+        {
+            GN_CORE_FATAL("There is no gameobjects in the scene, even the root object!  Exiting. . . ");
+        }
         CreateGameObjectFromYaml(rootObject, entt::null, gameobjects);
     }
 

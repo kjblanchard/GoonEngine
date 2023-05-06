@@ -13,7 +13,7 @@ namespace goon
         glm::vec3 Scale = {1.0f, 1.0f, 1.0f};
 
         TransformComponent() = default;
-        TransformComponent(const TransformComponent &) = default;
+        // TransformComponent(const TransformComponent &) = default;
         TransformComponent(glm::vec3 &translation)
             : Translation(translation)
         {

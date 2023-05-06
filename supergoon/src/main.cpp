@@ -11,7 +11,6 @@ int main(int argc, char **argv)
     scene.DeSerializeScene();
 
     // ScriptTesting
-    goon::ScriptSystem::scene = &scene;
     auto domain = goon::ScriptSystem::InitializeMono();
     auto assembly = goon::ScriptSystem::OpenAssembly("hello.dll", domain);
     auto image = goon::ScriptSystem::OpenImage(assembly);
@@ -59,8 +58,6 @@ int demo(goon::Scene &scene)
         application.StartDrawFrame();
         editor.DrawImGuiFrame();
         application.EndDrawFrame();
-        // TODO reenable sound, or put into a system.
-        // UpdateSoundBro();
     }
 
     editor.ExitImGui();

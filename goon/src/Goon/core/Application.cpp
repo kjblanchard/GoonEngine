@@ -1,5 +1,6 @@
 #include <Goon/core/Application.hpp>
 #include <glad/glad.h>
+#include <Goon/core/Log.hpp>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL_opengles2.h>
 #else
@@ -60,9 +61,12 @@ namespace goon
         SDL_GLContext gl_context = SDL_GL_CreateContext(_window);
         SDL_GL_MakeCurrent(_window, gl_context);
         SDL_GL_SetSwapInterval(1); // Enable vsync
-          int status = gladLoadGLLoader(SDL_GL_GetProcAddress);
+        int status = gladLoadGLLoader(SDL_GL_GetProcAddress);
+        if (!status)
+        {
+            GN_CORE_FATAL("Could not load opengl, exiting. . . ");
+        }
 
-        // gladLoadGL();
 
         if (_context == NULL)
         {

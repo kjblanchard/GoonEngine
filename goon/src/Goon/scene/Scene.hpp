@@ -36,5 +36,8 @@ namespace goon
         static Scene *_scene;
         entt::registry _registry;
         entt::entity CreateGameObjectFromYaml(uint64_t entityId, entt::entity parent, YAML::Node &gameObjectNode);
+
+       friend class EditorLayer;
+       friend class ScriptSystem;
     };
 }
