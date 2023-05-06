@@ -60,53 +60,36 @@ namespace goon
         SDL_GLContext gl_context = SDL_GL_CreateContext(_window);
         SDL_GL_MakeCurrent(_window, gl_context);
         SDL_GL_SetSwapInterval(1); // Enable vsync
+          int status = gladLoadGLLoader(SDL_GL_GetProcAddress);
+
+        // gladLoadGL();
 
         if (_context == NULL)
         {
             SDL_Log("Error creating GL context!!");
             return 0;
         }
-        SDL_RendererInfo info;
         return 0;
     }
     void Application::ResizeWindow()
     {
-#ifdef GN_PLATFORM_MACOS
-        int width, height, rwidth, rheight;
-        float scalex, scaley;
+        int width, height;
         SDL_GetWindowSize(_window, &width, &height);
-
-        SDL_GL_GetDrawableSize(_window, &rwidth, &rheight);
-        gladLoadGL();
-
-
-        // SDL_GetRendererOutputSize(_renderer, &rwidth, &rheight);
-        scalex = rwidth / width;
-        scaley = rheight / height;
-        glViewport(0, 0, width * scalex, height* scaley);
-        // SDL_RenderSetScale(_renderer, scalex, scaley);
-#endif
+        glViewport(0, 0, width, height);
     }
 
     void Application::StartDrawFrame()
     {
-
-        // SDL_SetRenderDrawColor(_renderer, (Uint8)(255), (Uint8)(255), (Uint8)(255), (Uint8)(255));
-        // SDL_RenderClear(_renderer);
-
-
         glClearColor(255, 255, 255, 255);
         glClear(GL_COLOR_BUFFER_BIT);
     }
     void Application::EndDrawFrame()
     {
-        // SDL_RenderPresent(_renderer);
         SDL_GL_SwapWindow(_window);
     }
     void Application::DestroyWindow()
     {
-        // SDL_DestroyRenderer(_renderer);
-        // SDL_DestroyWindow(_window);
+        SDL_DestroyWindow(_window);
     }
     void Application::ExitSdl()
     {

@@ -134,6 +134,11 @@ if(GOON_BUILD_ENGINE)
         )
 endif(GOON_BUILD_ENGINE)
 
+# target_compile_definitions(goonEngine PRIVATE
+#         -DGL_SILENCE_DEPRECATION
+#         -DIMGUI_IMPL_OPENGL_LOADER_GLAD # Used since we use glad?
+# )
+
 if(APPLE)
         target_compile_definitions(goonEngine PRIVATE -DGN_PLATFORM_MACOS)
 elseif(WIN32)

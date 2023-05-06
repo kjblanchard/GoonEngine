@@ -136,7 +136,7 @@ namespace goon
             return hierarchyComponent.NextChild;
         if (hierarchyComponent.FirstChild == entt::null) // If we have no children, we draw a selectable.
         {
-            ImGui::PushID(gameobject.GetGameobjectUniqueIntImgui());
+            ImGui::PushID(_editor->GetGameobjectUniqueIntImgui(&gameobject));
             if (ImGui::Selectable(tagComponent, gameobject.GetEntity() == _editor->entitySelected))
             {
                 _editor->entitySelected = gameobject.GetEntity();
@@ -154,7 +154,7 @@ namespace goon
             {
                 node_flags |= 1 << 0;
             }
-            bool node_open = ImGui::TreeNodeEx(gameobject.GetGameobjectUniqueIntImgui(), node_flags, "%s", tagComponent.Tag.c_str());
+            bool node_open = ImGui::TreeNodeEx(_editor->GetGameobjectUniqueIntImgui(&gameobject), node_flags, "%s", tagComponent.Tag.c_str());
             DragDropSource(entity, tagComponent.Tag);
             DragDropTargetAppend(scene, entity, parents);
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())

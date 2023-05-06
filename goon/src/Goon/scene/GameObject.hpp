@@ -93,26 +93,5 @@ namespace goon
         void AddParentEntity(entt::entity parent);
 
     public:
-        // TODO move these out of gameobject
-        /**
-         * @brief Used for generating a unique int from this gameobject
-         *
-         * @return void*
-         */
-        void *GetGameobjectUniqueIntImgui()
-        {
-            return (void *)(intptr_t)(GetID() + typeid(GameObject).hash_code());
-        }
-        /**
-         * @brief Used for generating a unique int from the type sent in.  Probably should combine the two or remove.  This is used in editor for imgui, likely move it there..
-         *
-         * @tparam T
-         * @return void*
-         */
-        template <typename T>
-        void *GetComponentUniqueIntImGui()
-        {
-            return (void *)(intptr_t)(GetID() + typeid(T).hash_code());
-        }
     };
 }

@@ -37,6 +37,7 @@ int demo(goon::Scene &scene)
     editor.InitializeImGui();
     editor.LoadScene(scene);
     bool done = false;
+    goon::Application().ResizeWindow();
     while (!done)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -53,9 +54,8 @@ int demo(goon::Scene &scene)
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(application.GetWindow()))
                 done = true;
         }
-        application.ResizeWindow();
         editor.ImGuiNewFrame();
-        editor.ProcessImGuiFrame(scene);
+        editor.ProcessImGuiFrame();
         application.StartDrawFrame();
         editor.DrawImGuiFrame();
         application.EndDrawFrame();

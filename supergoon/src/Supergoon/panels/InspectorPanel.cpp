@@ -94,7 +94,7 @@ namespace goon
             }
             if (hasHierarchy)
             {
-                auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::HierarchyComponent>();
+                auto uniqueInt = _editor->GetComponentUniqueIntImGui<goon::HierarchyComponent>(&gameobject);
                 if (ImGui::TreeNode(uniqueInt, "HierarchyComponent"))
                 {
                     auto &hierarchyComponent = gameobject.GetComponent<goon::HierarchyComponent>();
@@ -107,7 +107,7 @@ namespace goon
             }
             if (hasId)
             {
-                auto uniqueInt = gameobject.GetComponentUniqueIntImGui<goon::IdComponent>();
+                auto uniqueInt = _editor->GetComponentUniqueIntImGui<goon::IdComponent>(&gameobject);
                 if (ImGui::TreeNode(uniqueInt, "IdInfo"))
                 {
                     auto &idComponent = gameobject.GetComponent<goon::IdComponent>();
