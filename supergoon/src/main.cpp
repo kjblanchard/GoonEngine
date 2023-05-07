@@ -4,6 +4,10 @@
 #include <Goon/core/Log.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
 
+//TODO make these better.
+#include <GoonPlatforms/Window/SdlWindow.hpp>
+#include <GoonPlatforms/Rendering/OpenGL/OpenGL.hpp>
+
 int demo(goon::Scene &scene);
 int main(int argc, char **argv)
 {
@@ -31,12 +35,13 @@ int main(int argc, char **argv)
 int demo(goon::Scene &scene)
 {
     auto application = goon::Application();
-    application.InitializeSDL();
+    auto window = goon::WindowApi::Create();
     auto editor = goon::EditorLayer();
     editor.InitializeImGui();
     editor.LoadScene(scene);
     bool done = false;
-    goon::Application().ResizeWindow();
+    goon::OpenGL::ResizeWindow();
+
     while (!done)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -50,19 +55,16 @@ int demo(goon::Scene &scene)
             editor.ProcessImGuiEvents(&event);
             if (event.type == SDL_QUIT)
                 done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(application.GetWindow()))
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(SDL_GL_GetCurrentWindow()))
                 done = true;
         }
         editor.ImGuiNewFrame();
         editor.ProcessImGuiFrame();
-        application.StartDrawFrame();
+        goon::OpenGL::StartDrawFrame();
         editor.DrawImGuiFrame();
-        application.EndDrawFrame();
+        goon::OpenGL::EndDrawFrame();
     }
-
     editor.ExitImGui();
-    application.DestroyWindow();
-    application.ExitSdl();
 
     return 0;
 }

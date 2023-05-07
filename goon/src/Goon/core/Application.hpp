@@ -1,5 +1,4 @@
 #pragma once
-#include <SDL.h>
 
 namespace goon
 {
@@ -8,9 +7,6 @@ namespace goon
     public:
     Application();
         bool InitializeSDL();
-        // SDL_Renderer *GetRenderer() { return _renderer; }
-        SDL_GLContext* GetGLContext() { return _context; }
-        SDL_Window *GetWindow() { return _window; }
 
         // Window stuff
         /**
@@ -24,11 +20,7 @@ namespace goon
         void ExitSdl();
         static Application* GetApplication() { return _application; }
 
-//TODO make window class.
-        const char* glslVersion;
     private:
-        SDL_Window *_window;
-        SDL_GLContext *_context;
         static Application* _application;
 
     };

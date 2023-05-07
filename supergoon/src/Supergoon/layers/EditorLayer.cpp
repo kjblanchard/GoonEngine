@@ -5,6 +5,8 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <Goon/scene/Scene.hpp>
 #include <Goon/core/Application.hpp>
+//TODO fix
+#include <GoonPlatforms/Rendering/OpenGL/OpenGL.hpp>
 
 #define IMGUI_DEMO_GOON
 
@@ -26,13 +28,14 @@ namespace goon
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
         // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-        ImGui_ImplOpenGL3_Init(application->glslVersion);
+        //TODO get this from window?  what
+        ImGui_ImplOpenGL3_Init("#version 150");
         bool imGuiDarkMode = false;
         if (imGuiDarkMode)
             ImGui::StyleColorsDark();
         else
             ImGui::StyleColorsLight();
-        ImGui_ImplSDL2_InitForOpenGL(application->GetWindow(), application->GetGLContext());
+        ImGui_ImplSDL2_InitForOpenGL(OpenGL::GetWindow(), OpenGL::GetGLContext());
         CreateAllPanels();
     }
     void EditorLayer::CreateAllPanels()
