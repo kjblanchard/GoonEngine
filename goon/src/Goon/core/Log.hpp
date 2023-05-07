@@ -43,10 +43,10 @@ namespace goon
 #define GN_CORE_WARN(...) ::goon::Log::GetCoreLogger()->warn(__VA_ARGS__)
 #define GN_CORE_INFO(...) ::goon::Log::GetCoreLogger()->info(__VA_ARGS__)
 #define GN_CORE_TRACE(...) ::goon::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define GN_CORE_FATAL(...) ::goon::Log::GetCoreLogger()->fatal(__VA_ARGS__)
+#define GN_CORE_FATAL(...) ::goon::Log::GetCoreLogger()->critical(__VA_ARGS__)
 //Client log metrics, this is what we should use in mono
 #define GN_ERROR(...) ::goon::Log::GetClientLogger()->error(__VA_ARGS__)
 #define GN_WARN(...) ::goon::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define GN_INFO(...) ::goon::Log::GetClientLogger()->info(__VA_ARGS__)
 #define GN_TRACE(...) ::goon::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define GN_FATAL(...) ::goon::Log::GetClientLogger()->fatal(__VA_ARGS__)
+#define GN_FATAL(...) ::goon::Log::GetClientLogger()->critical(__VA_ARGS__)
