@@ -48,6 +48,10 @@ option(GOON_BUILD_PCH "Uses a PCH file to try and speed up compilation" ON)
 option(GOON_BUILD_ENGINE "Builds the full engine into the project" ON)
 option(CMAKE_DEBUG_VARIABLES "Runs a debug on all variables for troubleshooting" ON)
 
+# Backend Options
+option(GOON_BACKEND_OPENGL "Uses OpenGL rendering" ON)
+option(GOON_BACKEND_SDL "Uses SDL for windowing" ON)
+
 # Not implemented.
 option(GOON_INSTALL_SUBMODULES "Install the submodules" ON)
 
@@ -133,6 +137,20 @@ if(GOON_BUILD_ENGINE)
                 # -DGN_ENABLE_ASSERTS # Enables asserts
         )
 endif(GOON_BUILD_ENGINE)
+
+# Rendering
+if(GOON_BACKEND_OPENGL)
+        target_compile_definitions(goonEngine PRIVATE
+                -DGN_BACKEND_OPENGL # Builds the full project
+        )
+endif(GOON_BACKEND_OPENGL)
+
+# Window
+if(GOON_BACKEND_SDL)
+        target_compile_definitions(goonEngine PRIVATE
+                -DGN_BACKEND_SDL # Builds the full project
+        )
+endif(GOON_BACKEND_SDL)
 
 # target_compile_definitions(goonEngine PRIVATE
 #         -DGL_SILENCE_DEPRECATION

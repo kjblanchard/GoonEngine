@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Goon
+namespace goon
 {
     class Shader
     {

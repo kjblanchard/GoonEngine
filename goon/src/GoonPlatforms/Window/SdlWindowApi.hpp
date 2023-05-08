@@ -1,14 +1,14 @@
 #pragma once
-#include <GoonPlatforms/Window/WindowApi.hpp>
+#include <Goon/Window/WindowApi.hpp>
 #include <SDL.h>
 
 namespace goon
 {
-    class SdlWindow : public WindowApi
+    class SdlWindowApi : public WindowApi
     {
     public:
-        SdlWindow(const WindowProps& props);
-        ~SdlWindow() override;
+        SdlWindowApi(const WindowProps& props);
+        ~SdlWindowApi() override;
         /**
          * @brief Update function for the window
          */
@@ -58,6 +58,7 @@ namespace goon
          *
          * @return The Created window.
          */
+        void* GetNativeWindow() const override;
 
     private:
         SDL_Window *_window;

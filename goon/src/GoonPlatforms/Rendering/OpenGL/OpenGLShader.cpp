@@ -2,7 +2,7 @@
 #include <GoonPlatforms/Rendering/OpenGL/OpenGLShader.hpp>
 #include <Goon/core/Log.hpp>
 
-namespace Goon
+namespace goon
 {
     OpenGLShader::OpenGLShader(const std::string &vertex_shader, const std::string &fragment_shader)
     {

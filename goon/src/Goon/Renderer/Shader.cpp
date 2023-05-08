@@ -1,11 +1,11 @@
 #include <gnpch.hpp>
-#include <Goon/Renderer/Renderer.hpp>
 #include <Goon/Renderer/Shader.hpp>
+#include <Goon/Renderer/RendererAPI.hpp>
 #include <GoonPlatforms/Rendering/OpenGL/OpenGLShader.hpp>
 #include <Goon/core/Log.hpp>
 #include <GoonTools/io.hpp>
 
-namespace Goon
+namespace goon
 {
 
     Shader *Shader::Create(const std::string &shaderSourcePath)

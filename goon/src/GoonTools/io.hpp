@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace Goon {
+namespace goon {
 
     std::string ReadFromFile(std::string& filepath);
 

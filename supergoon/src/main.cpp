@@ -5,7 +5,7 @@
 #include <Supergoon/layers/EditorLayer.hpp>
 
 //TODO make these better.
-#include <GoonPlatforms/Window/SdlWindow.hpp>
+#include <GoonPlatforms/Window/SdlWindowApi.hpp>
 #include <GoonPlatforms/Rendering/OpenGL/OpenGL.hpp>
 
 int demo(goon::Scene &scene);
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 int demo(goon::Scene &scene)
 {
     auto application = goon::Application();
-    auto window = goon::WindowApi::Create();
+    // auto window = goon::WindowApi::Create();
     auto editor = goon::EditorLayer();
     editor.InitializeImGui();
     editor.LoadScene(scene);

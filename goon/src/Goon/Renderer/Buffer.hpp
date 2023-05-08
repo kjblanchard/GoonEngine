@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <Goon/core/Log.hpp>
 
-namespace Goon
+namespace goon
 {
     enum class ShaderDataType
     {

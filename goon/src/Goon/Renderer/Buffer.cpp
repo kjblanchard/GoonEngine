@@ -5,7 +5,7 @@
 // Backend Includes.
 #include <GoonPlatforms/Rendering/OpenGL/OpenGLBuffer.hpp>
 
-namespace Goon
+namespace goon
 {
     VertexBuffer *VertexBuffer::Create(float *vertices, uint32_t size)
     {

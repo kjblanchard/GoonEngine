@@ -10,11 +10,6 @@
 
 namespace goon
 {
-    enum class WindowTypes
-    {
-        Default,
-        SDL2,
-    };
 
     /**
      * @brief The Properties of a window needed to create one
@@ -45,7 +40,16 @@ namespace goon
     class WindowApi
     {
     public:
-        virtual ~WindowApi() {}
+        enum class API
+        {
+            Default,
+            SDL2,
+        };
+
+    public:
+        static API GetApi() { return s_Api; }
+
+        virtual ~WindowApi() = default;
         /**
          * @brief Update function for the window
          */
@@ -101,5 +105,10 @@ namespace goon
          * @return The Created window.
          */
         static WindowApi *Create(const WindowProps &props = WindowProps());
+        virtual void* GetNativeWindow() const = 0;
+
+    private:
+        static API s_Api;
+        friend class SdlWindowApi;
     };
 }

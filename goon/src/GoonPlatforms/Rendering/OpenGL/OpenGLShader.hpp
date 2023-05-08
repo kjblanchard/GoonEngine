@@ -2,7 +2,7 @@
 #include <gnpch.hpp>
 #include <Goon/Renderer/Shader.hpp>
 
-namespace Goon
+namespace goon
 {
     class OpenGLShader: public Shader
     {

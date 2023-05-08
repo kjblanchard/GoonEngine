@@ -1,10 +1,9 @@
 #include <gnpch.hpp>
 #include <glad/glad.h>
-#include <Goon/Renderer/Renderer.hpp>
 
 #include <GoonPlatforms/Rendering/OpenGL/OpenGLBuffer.hpp>
 
-namespace Goon
+namespace goon
 {
 
     OpenGLVertexBuffer::OpenGLVertexBuffer(float *vertices, uint32_t size)

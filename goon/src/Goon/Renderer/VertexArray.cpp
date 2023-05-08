@@ -3,7 +3,7 @@
 #include <Goon/Renderer/RendererAPI.hpp>
 #include <GoonPlatforms/Rendering/OpenGL/OpenGLVertexArray.hpp>
 
-namespace Goon
+namespace goon
 {
 
     VertexArray* VertexArray::Create()

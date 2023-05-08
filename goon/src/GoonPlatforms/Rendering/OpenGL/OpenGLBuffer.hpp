@@ -1,7 +1,7 @@
 #pragma once
 #include <Goon/Renderer/Buffer.hpp>
 
-namespace Goon
+namespace goon
 {
     class OpenGLVertexBuffer : public VertexBuffer
     {

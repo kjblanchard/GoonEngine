@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <GoonPlatforms/Rendering/OpenGL/OpenGLVertexArray.hpp>
 
-namespace Goon
+namespace goon
 {
     static GLenum ShaderDataTypeToGLBaseType(ShaderDataType type)
     {

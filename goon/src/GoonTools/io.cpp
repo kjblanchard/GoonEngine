@@ -3,7 +3,7 @@
 #include <GoonTools/io.hpp>
 
 
-namespace Goon {
+namespace goon {
 
     std::string ReadFromFile(std::string &filepath)
     {

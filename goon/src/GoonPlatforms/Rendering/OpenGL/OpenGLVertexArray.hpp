@@ -2,7 +2,7 @@
 
 #include <Goon/Renderer/VertexArray.hpp>
 
-namespace Goon
+namespace goon
 {
     class OpenGLVertexArray : public VertexArray
     {
