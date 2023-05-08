@@ -63,14 +63,16 @@ namespace goon
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
         _window = SDL_CreateWindow(props.Title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, props.Width, props.Height, window_flags);
-        SDL_GLContext gl_context = SDL_GL_CreateContext(_window);
-        SDL_GL_MakeCurrent(_window, gl_context);
-        SDL_GL_SetSwapInterval(1); // Enable vsync
-        int status = gladLoadGLLoader(SDL_GL_GetProcAddress);
-        if (!status)
-        {
-            GN_CORE_FATAL("Could not load opengl, exiting. . . ");
-        }
+
+        //TODO need to call these in the renderer.
+        // SDL_GLContext gl_context = SDL_GL_CreateContext(_window);
+        // SDL_GL_MakeCurrent(_window, gl_context);
+        // SDL_GL_SetSwapInterval(1); // Enable vsync
+        // int status = gladLoadGLLoader(SDL_GL_GetProcAddress);
+        // if (!status)
+        // {
+        //     GN_CORE_FATAL("Could not load opengl, exiting. . . ");
+        // }
 #endif
     }
 
