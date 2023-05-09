@@ -15,6 +15,7 @@
 
 // testing loading image
 #include <Goon/core/image_asset.hpp>
+#include <Goon/Renderer/Texture.hpp>
 using namespace goon;
 
 int demo(goon::Scene &scene);
@@ -56,8 +57,9 @@ int demo(goon::Scene &scene)
     m_VertexArray.reset(VertexArray::Create());
 
     // Triangle image
-    auto asset = ImageAsset("assets/fun.jpg");
-    asset.Load();
+    std::string filename = "assets/fun.jpg";
+    auto texture = goon::Texture::Create(filename);
+    texture->Load();
 
     // Basic triangle
     float vertices[] = {
