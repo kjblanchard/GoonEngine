@@ -138,6 +138,12 @@ if(GOON_BUILD_ENGINE)
         )
 endif(GOON_BUILD_ENGINE)
 
+# Definition for stb_image to be added to compilation
+target_compile_definitions(goonEngine PRIVATE
+
+        -DSTB_IMAGE_IMPLEMENTATION
+)
+
 # Rendering
 if(GOON_BACKEND_OPENGL)
         target_compile_definitions(goonEngine PRIVATE
@@ -208,6 +214,7 @@ target_include_directories(goonEngine
         external/entt/src
         external/yaml-cpp/include
         external/glad/include
+        external/stb_image
 )
 
 # #########################################

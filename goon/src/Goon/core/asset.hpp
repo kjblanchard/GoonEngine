@@ -36,6 +36,8 @@ namespace goon
             return (T *)GetAsset();
         }
 
+        std::string GetFilename() const { return _filename; }
+
     protected:
         /**
          * @brief Filename

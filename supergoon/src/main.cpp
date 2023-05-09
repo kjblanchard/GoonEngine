@@ -12,6 +12,9 @@
 #include <Goon/Renderer/Buffer.hpp>
 #include <Goon/Renderer/VertexArray.hpp>
 #include <Goon/Renderer/Shader.hpp>
+
+// testing loading image
+#include <Goon/core/image_asset.hpp>
 using namespace goon;
 
 int demo(goon::Scene &scene);
@@ -51,6 +54,10 @@ int demo(goon::Scene &scene)
     bool done = false;
     goon::OpenGL::ResizeWindow();
     m_VertexArray.reset(VertexArray::Create());
+
+    // Triangle image
+    auto asset = ImageAsset("assets/fun.jpg");
+    asset.Load();
 
     // Basic triangle
     float vertices[] = {
