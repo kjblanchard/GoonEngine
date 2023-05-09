@@ -28,9 +28,11 @@ namespace goon
 
         static RendererAPI *Create(WindowApi& window);
         WindowApi* m_Window;
+        //TODO move this somewhere not public
+
+        static RendererAPI* s_RendererApi;
 
     protected:
         static API s_API;
-        static RendererAPI* s_RendererApi;
     };
 }

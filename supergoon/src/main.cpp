@@ -4,11 +4,20 @@
 #include <Goon/core/Log.hpp>
 #include <Supergoon/layers/EditorLayer.hpp>
 
-//TODO make these better.
+// TODO make these better.
 #include <GoonPlatforms/Window/SdlWindowApi.hpp>
 #include <GoonPlatforms/Rendering/OpenGL/OpenGL.hpp>
+// Testing opengl
+#include <Goon/Renderer/RendererAPI.hpp>
+#include <Goon/Renderer/Buffer.hpp>
+#include <Goon/Renderer/VertexArray.hpp>
+#include <Goon/Renderer/Shader.hpp>
+using namespace goon;
 
 int demo(goon::Scene &scene);
+std::shared_ptr<Shader> m_Shader;
+std::shared_ptr<VertexArray> m_VertexArray;
+std::shared_ptr<VertexArray> m_SquareVertexArray;
 int main(int argc, char **argv)
 {
     goon::Scene scene;
@@ -26,7 +35,7 @@ int main(int argc, char **argv)
     goon::ScriptSystem::CallMethod(method, classInstance);
     goon::ScriptSystem::CloseMono(domain);
     goon::Log::Init();
-    GN_CORE_ERROR("What in the world is this {}" , 1);
+    GN_CORE_ERROR("What in the world is this {}", 1);
     // EndScriptTesting
 
     demo(scene);
@@ -41,6 +50,48 @@ int demo(goon::Scene &scene)
     editor.LoadScene(scene);
     bool done = false;
     goon::OpenGL::ResizeWindow();
+    m_VertexArray.reset(VertexArray::Create());
+
+    // Basic triangle
+    float vertices[] = {
+        0.5f, 0.5f, 0.0f, 1.0f, 1, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f, 1.0f, 0, 1.0f, 1.0f,
+        -0.5f, -0.5f, 0.0f, 1.0f, 0, 1.0f, 1.0,
+        -0.5f, 0.5f, 0.0f, 1.0f, 0, 1.0f, 1.0f};
+    std::shared_ptr<VertexBuffer> vertexBuffer;
+    vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+    m_Shader.reset(Shader::Create("basic.glsl"));
+
+    BufferLayout layout = {
+        {ShaderDataType::Float3, "a_Position"},
+        {ShaderDataType::Float4, "a_Color"},
+    };
+    vertexBuffer->SetLayout(layout);
+    m_VertexArray->AddVertexBuffer(vertexBuffer);
+
+    unsigned int indices[] = {0, 2, 3, 1, 2, 3};
+    std::shared_ptr<IndexBuffer> indexBuffer;
+    indexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices)));
+    m_VertexArray->SetIndexBuffer(indexBuffer);
+
+    m_SquareVertexArray.reset(VertexArray::Create());
+    float squareVertices[] = {
+        -0.75f, -0.75f, 0.0f, 0.0f, 1, 1.0f, 1.0f,
+        0.75f, -0.75f, 0.0f, 0.0f, 0, 1.0f, 1.0f,
+        0.75f, 0.75f, 0.0f, 0.0f, 0, 1.0f, 1.0,
+        -0.75f, 0.75f, 0.0f, 0.0f, 0, 1.0f, 1.0f};
+    std::shared_ptr<VertexBuffer> squareVBO;
+    squareVBO.reset(VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+    BufferLayout squareLayout = {
+        {ShaderDataType::Float3, "a_Position"},
+        {ShaderDataType::Float4, "a_Color"},
+    };
+    squareVBO->SetLayout(squareLayout);
+    m_SquareVertexArray->AddVertexBuffer(squareVBO);
+    unsigned int squareIndices[] = {0, 1, 2, 2, 3, 0};
+    std::shared_ptr<IndexBuffer> squareIndexBuffer;
+    squareIndexBuffer.reset(IndexBuffer::Create(squareIndices, sizeof(squareIndices)));
+    m_SquareVertexArray->SetIndexBuffer(squareIndexBuffer);
 
     while (!done)
     {
@@ -61,6 +112,11 @@ int demo(goon::Scene &scene)
         editor.ImGuiNewFrame();
         editor.ProcessImGuiFrame();
         goon::OpenGL::StartDrawFrame();
+        m_Shader->Bind();
+
+        OpenGL::Submit(m_SquareVertexArray);
+        OpenGL::Submit(m_VertexArray);
+
         editor.DrawImGuiFrame();
         goon::OpenGL::EndDrawFrame();
     }

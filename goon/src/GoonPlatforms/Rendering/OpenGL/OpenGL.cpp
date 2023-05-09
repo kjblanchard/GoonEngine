@@ -12,6 +12,8 @@
 #include <SDL_video.h>
 #endif
 
+#include <Goon/Renderer/RendererAPI.hpp>
+
 namespace goon
 {
     void OpenGL::StartDrawFrame()
@@ -28,6 +30,11 @@ namespace goon
         int width, height;
         SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &width, &height);
         glViewport(0, 0, width, height);
+    }
+    void OpenGL::Submit(const std::shared_ptr<VertexArray> &vertexArray)
+    {
+        vertexArray->Bind();
+        RendererAPI::s_RendererApi->DrawIndexed(vertexArray);
     }
 
     SDL_GLContext OpenGL::GetGLContext()

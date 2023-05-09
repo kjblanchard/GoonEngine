@@ -89,7 +89,7 @@ add_subdirectory(external/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(external/entt EXCLUDE_FROM_ALL)
 
 # glm
-add_subdirectory(external/glm EXCLUDE_FROM_ALL)
+# add_subdirectory(external/glm EXCLUDE_FROM_ALL)
 
 # goon_sound
 add_subdirectory(external/goon_sound EXCLUDE_FROM_ALL)
@@ -153,10 +153,9 @@ if(GOON_BACKEND_SDL)
 endif(GOON_BACKEND_SDL)
 
 # target_compile_definitions(goonEngine PRIVATE
-#         -DGL_SILENCE_DEPRECATION
-#         -DIMGUI_IMPL_OPENGL_LOADER_GLAD # Used since we use glad?
+# -DGL_SILENCE_DEPRECATION
+# -DIMGUI_IMPL_OPENGL_LOADER_GLAD # Used since we use glad?
 # )
-
 if(APPLE)
         target_compile_definitions(goonEngine PRIVATE -DGN_PLATFORM_MACOS)
 elseif(WIN32)
@@ -182,9 +181,9 @@ target_compile_options(goonEngine PRIVATE
 target_link_libraries(goonEngine
         PUBLIC
         spdlog::spdlog
+        EnTT::EnTT
         imgui
         SDL2::SDL2
-        EnTT::EnTT
         goon_sound
         yaml-cpp
         glad
@@ -198,11 +197,13 @@ target_include_directories(goonEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
         external/goon_sound/src
         ${mono-2_INCLUDEDIR}
+        external/glm
+
+        INTERFACE
 
         PRIVATE
         external/imgui
         spdlog::spdlog
-        external/glm/
         external/SDL
         external/entt/src
         external/yaml-cpp/include
@@ -215,6 +216,7 @@ target_include_directories(goonEngine
 
 # MACOS SPECIFIC CURRENTLY FOR MONO, this likely should be done differently, as a install target, or something.  Read the docs.
 set(FOLDERS_TO_COPY /opt/homebrew/lib/mono/4.5)
+
 # Copy mono lib folder over, this is needed for embedding mono
 install(DIRECTORY ${FOLDERS_TO_COPY}
         DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/mono/lib
@@ -230,3 +232,14 @@ install(FILES /Users/kevin/git/engine/goon/supergoon/template.yml
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
         RENAME default.yml
 )
+
+# Copy shaders
+set(FOLDERS_TO_COPY shaders)
+install(DIRECTORY ${FOLDERS_TO_COPY}
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        COMPONENT assets)
+
+# #########################################
+# Test
+# #########################################
+# add_test(NAME cppclean COMMAND ${CMAKE_SOURCE_DIR}/tests/cppclean.sh ${CMAKE_SOURCE_DIR})

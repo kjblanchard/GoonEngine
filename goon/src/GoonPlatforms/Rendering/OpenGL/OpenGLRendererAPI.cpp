@@ -58,7 +58,9 @@ namespace goon
 
     RendererAPI *RendererAPI::Create(WindowApi &window)
     {
-        return new OpenGLRendererAPI(window);
+        //This is jank
+        RendererAPI::s_RendererApi = new OpenGLRendererAPI(window);
+        return RendererAPI::s_RendererApi;
     }
 
     void OpenGLRendererAPI::SwapBuffers()
