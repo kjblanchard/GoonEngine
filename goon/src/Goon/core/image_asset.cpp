@@ -17,6 +17,7 @@ namespace goon
 
     void ImageAsset::Load()
     {
+        stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
         _data = stbi_load(_filename.c_str(), &_width, &_height, &_bytesPerPixel, 0);
         if (_data)
             GN_CORE_TRACE("Asset {} is loaded", _filename);

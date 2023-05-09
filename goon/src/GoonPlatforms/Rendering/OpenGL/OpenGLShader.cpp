@@ -6,7 +6,7 @@ namespace goon
 {
     OpenGLShader::OpenGLShader(const std::string &vertex_shader, const std::string &fragment_shader)
     {
-        //vertex
+        // vertex
         unsigned int vertexShader;
         vertexShader = glCreateShader(GL_VERTEX_SHADER);
         const GLchar *vertex = vertex_shader.c_str();
@@ -85,6 +85,11 @@ namespace goon
         }
 
         return result;
+    }
+
+    void OpenGLShader::BindTexture()
+    {
+        glUniform1i(glGetUniformLocation(m_Id, "ourTexture"), 0); // set it manually
     }
 
 }

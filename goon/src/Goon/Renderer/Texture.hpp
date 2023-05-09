@@ -10,6 +10,7 @@ namespace goon
         static Texture *Create(std::string &filename);
 
         virtual void Bind() = 0;
+        virtual void UnBind() = 0;
         virtual void Load() = 0;
 
     protected:

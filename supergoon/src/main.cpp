@@ -20,8 +20,10 @@ using namespace goon;
 
 int demo(goon::Scene &scene);
 std::shared_ptr<Shader> m_Shader;
+std::shared_ptr<Shader> m_TexShader;
 std::shared_ptr<VertexArray> m_VertexArray;
 std::shared_ptr<VertexArray> m_SquareVertexArray;
+std::shared_ptr<Texture> m_Texture;
 int main(int argc, char **argv)
 {
     goon::Scene scene;
@@ -58,30 +60,37 @@ int demo(goon::Scene &scene)
 
     // Triangle image
     std::string filename = "assets/fun.jpg";
-    auto texture = goon::Texture::Create(filename);
-    texture->Load();
+    m_Texture.reset(goon::Texture::Create(filename));
+    m_Texture->Load();
 
-    // Basic triangle
-    float vertices[] = {
-        0.5f, 0.5f, 0.0f, 1.0f, 1, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.0f, 1.0f, 0, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f, 1.0f, 0, 1.0f, 1.0,
-        -0.5f, 0.5f, 0.0f, 1.0f, 0, 1.0f, 1.0f};
+
+        float vertices[] = {
+        // positions          // colors           // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
+    };
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
     std::shared_ptr<VertexBuffer> vertexBuffer;
     vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
     m_Shader.reset(Shader::Create("basic.glsl"));
+    m_TexShader.reset(Shader::Create("basic_texture.glsl"));
 
     BufferLayout layout = {
-        {ShaderDataType::Float3, "a_Position"},
-        {ShaderDataType::Float4, "a_Color"},
-    };
+        {ShaderDataType::Float3, "aPos"},
+        {ShaderDataType::Float3, "aColor"},
+        {ShaderDataType::Float2, "aTexCoord"}};
     vertexBuffer->SetLayout(layout);
     m_VertexArray->AddVertexBuffer(vertexBuffer);
 
-    unsigned int indices[] = {0, 2, 3, 1, 2, 3};
     std::shared_ptr<IndexBuffer> indexBuffer;
     indexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices)));
     m_VertexArray->SetIndexBuffer(indexBuffer);
+    m_TexShader->BindTexture();
 
     m_SquareVertexArray.reset(VertexArray::Create());
     float squareVertices[] = {
@@ -121,10 +130,13 @@ int demo(goon::Scene &scene)
         editor.ImGuiNewFrame();
         editor.ProcessImGuiFrame();
         goon::OpenGL::StartDrawFrame();
-        m_Shader->Bind();
 
+        m_Shader->Bind();
         OpenGL::Submit(m_SquareVertexArray);
+        m_Texture->Bind();
+        m_TexShader->Bind();
         OpenGL::Submit(m_VertexArray);
+        m_Texture->UnBind();
 
         editor.DrawImGuiFrame();
         goon::OpenGL::EndDrawFrame();

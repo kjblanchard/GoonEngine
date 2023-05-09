@@ -11,6 +11,9 @@ namespace goon
         virtual void Load() override;
         virtual void *GetAsset() const override { return _data; }
         unsigned char *GetLoadedData() { return _data; }
+        int GetWidth() const { return _width; }
+        int GetHeight() const { return _height; }
+        int GetChannels() const { return _bytesPerPixel; }
 
     private:
         unsigned char *_data;
